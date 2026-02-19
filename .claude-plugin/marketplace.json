@@ -1,0 +1,27 @@
+{
+  "name": "moctarjallo-skills",
+  "owner": {
+    "name": "Moctar Diallo",
+    "email": "moctarjallo@gmail.com",
+    "url": "https://github.com/moctarjallo"
+  },
+  "metadata": {
+    "description": "Production-ready workflow orchestration with 72 focused plugins, 112 specialized agents, and 146 skills - optimized for granular installation and minimal token usage",
+    "version": "1.5.3"
+  },
+  "plugins": [
+    {
+      "name": "python-development",
+      "source": "./plugins/python-development",
+      "description": "Modern Python development with Python 3.12+, Django, FastAPI, async patterns, and production best practices",
+      "version": "1.2.1",
+      "author": {
+        "name": "Moctar Diallo",
+        "email": "moctarjallo@gmail.com"
+      },
+      "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "languages"
+    }
+  ]
+}
