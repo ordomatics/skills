@@ -12,13 +12,12 @@ A modular plugin system for [Claude Code](https://docs.claude.com/en/docs/claude
 /plugin marketplace add moctarjallo/skills
 ```
 
-### Step 2: Install the Python Plugin
+### Step 2: Install a Plugin
 
 ```bash
 /plugin install python-development
+/plugin install odoo-development
 ```
-
-This loads 3 Python agents, 1 scaffolding tool, and makes 5 skills available — nothing more.
 
 ---
 
@@ -51,6 +50,36 @@ Skills use progressive disclosure — they load knowledge only when activated:
 | `python-packaging` | Package setup, distribution |
 | `python-performance` | Profiling, optimization |
 | `uv-package-manager` | Fast dependency management |
+
+---
+
+## `odoo-development` Plugin
+
+### Commands
+
+- **`/odoo-development:bump-version`** — Bump an Odoo module version and update changelog/docs
+
+```bash
+/odoo-development:bump-version my_module
+```
+
+- **`/odoo-development:check-module`** — Validate an Odoo module structure and manifest
+
+```bash
+/odoo-development:check-module my_module
+```
+
+- **`/odoo-development:fix-app-store-html`** — Clean up and fix App Store HTML description
+
+```bash
+/odoo-development:fix-app-store-html my_module
+```
+
+### Skills
+
+| Skill | When It Activates |
+|---|---|
+| `odoo-app-landing-page` | Writing or improving Odoo App Store landing pages |
 
 ---
 

@@ -22,6 +22,19 @@
       "homepage": "https://github.com/moctarjallo/skills",
       "license": "MIT",
       "category": "languages"
+    },
+    {
+      "name": "odoo-development",
+      "source": "./plugins/odoo-development",
+      "description": "Odoo module development with version bumping, module validation, and App Store landing page tools",
+      "version": "1.0.0",
+      "author": {
+        "name": "Moctar Diallo",
+        "email": "moctarjallo@gmail.com"
+      },
+      "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "frameworks"
     }
   ]
 }
