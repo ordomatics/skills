@@ -1,12 +1,6 @@
 ---
 name: odoo-llm-module-creator
-description: >
-  Create complete, production-ready Odoo 18.0 modules following the patterns
-  established in this project's odoo-llm suite. Use this skill proactively
-  whenever the user asks to create a new Odoo module, add a new provider
-  integration, scaffold a feature, build a wizard, add a controller/webhook,
-  or extend an existing module with new models or views. Even partial requests
-  like "add a model for X" or "make a new llm_ module" should trigger this skill.
+description: "Create complete, production-ready Odoo 18.0 modules following the patterns of the odoo-llm suite. Use this skill proactively whenever the user asks to create a new Odoo module, add a new LLM provider integration, scaffold a feature, build a wizard, add a controller/webhook, or start a new module from scratch. Even partial requests like 'add a model for X' or 'make a new llm_ module' should trigger this skill."
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
