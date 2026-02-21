@@ -26,7 +26,20 @@
     {
       "name": "odoo-development",
       "source": "./plugins/odoo-development",
-      "description": "Generic Odoo 18.0 development base — ORM patterns, module scaffolding, feature development, App Store landing pages",
+      "description": "Odoo project development — Docker stack, entrypoint, module setup scripts, CI/CD pipelines, environment configuration",
+      "version": "1.0.0",
+      "author": {
+        "name": "Moctar Diallo",
+        "email": "moctarjallo@gmail.com"
+      },
+      "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "frameworks"
+    },
+    {
+      "name": "odoo-module-development",
+      "source": "./plugins/odoo-module-development",
+      "description": "Generic Odoo 18.0 module development — ORM patterns, module scaffolding, feature development, App Store landing pages",
       "version": "1.0.0",
       "author": {
         "name": "Moctar Diallo",

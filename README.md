@@ -16,7 +16,8 @@ A modular plugin system for [Claude Code](https://docs.claude.com/en/docs/claude
 
 ```bash
 /plugin install python-development
-/plugin install odoo-development
+/plugin install odoo-development       # Odoo project infra
+/plugin install odoo-module-development  # Odoo module code
 ```
 
 ---
@@ -53,26 +54,48 @@ Skills use progressive disclosure — they load knowledge only when activated:
 
 ---
 
-## `odoo-development` Plugin — Generic Base
+## `odoo-development` Plugin — Project Infrastructure
+
+Covers the Odoo project itself: Docker stack, entrypoint, environment, module setup, CI/CD.
 
 ### Agents
 
 | Agent | Model | Role |
 |---|---|---|
-| `odoo-developer` | Sonnet 4.6 | Generic Odoo 18.0 expertise |
-
-### Commands
-
-- **`/odoo-development:implement`** — Implement a feature, fix, refactor, or migration in any Odoo module
-- **`/odoo-development:bump-version`** — Bump an Odoo module version and update changelog/docs
-- **`/odoo-development:check-module`** — Validate an Odoo module structure and manifest
-- **`/odoo-development:fix-app-store-html`** — Clean up and fix App Store HTML description
+| `odoo-developer` | Sonnet 4.6 | Docker, entrypoint, env, CI/CD, module setup |
 
 ### Skills
 
 | Skill | When It Activates |
 |---|---|
-| `odoo-developer` | Any Odoo module development |
+| `odoo-docker-ops` | Docker Compose operations, image builds, logs |
+| `odoo-module-setup` | Module installation, setup_odoo_modules.sh |
+| `odoo-cicd` | GitHub Actions / GitLab CI pipeline management |
+
+---
+
+## `odoo-module-development` Plugin — Module Code Base
+
+Generic Odoo 18.0 module development patterns.
+
+### Agents
+
+| Agent | Model | Role |
+|---|---|---|
+| `odoo-module-developer` | Sonnet 4.6 | Generic Odoo 18.0 ORM, views, security expertise |
+
+### Commands
+
+- **`/odoo-module-development:implement`** — Implement a feature, fix, refactor, or migration in any Odoo module
+- **`/odoo-module-development:bump-version`** — Bump an Odoo module version and update changelog/docs
+- **`/odoo-module-development:check-module`** — Validate an Odoo module structure and manifest
+- **`/odoo-module-development:fix-app-store-html`** — Clean up and fix App Store HTML description
+
+### Skills
+
+| Skill | When It Activates |
+|---|---|
+| `odoo-module-developer` | Any Odoo module development |
 | `odoo-feature-dev` | Modifying existing Odoo modules |
 | `odoo-module-creator` | Scaffolding new Odoo modules |
 | `odoo-app-landing-page` | Writing or improving Odoo App Store landing pages |
@@ -81,7 +104,7 @@ Skills use progressive disclosure — they load knowledge only when activated:
 
 ## `odoo-llm-development` Plugin — LLM Suite
 
-Extends `odoo-development` with context for the `odoo-llm` suite (`addons/odoo-llm`).
+Extends `odoo-module-development` with context for the `odoo-llm` suite (`addons/odoo-llm`).
 
 ### Agents
 
@@ -104,7 +127,7 @@ Extends `odoo-development` with context for the `odoo-llm` suite (`addons/odoo-l
 
 ## `odoo-whatsapp-development` Plugin — WhatsApp
 
-Extends `odoo-development` with context for WhatsApp integration modules (`addons/whatsapp`).
+Extends `odoo-module-development` with context for WhatsApp integration modules (`addons/whatsapp`).
 
 ### Agents
 
