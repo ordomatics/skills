@@ -112,10 +112,6 @@ Extends `odoo-module-development` with context for the `odoo-llm` suite (`addons
 |---|---|---|
 | `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, queue jobs, 33+ modules) |
 
-### Commands
-
-- **`/odoo-llm-development:implement`** — Implement a feature, fix, or refactor in an odoo-llm module
-
 ### Skills
 
 | Skill | When It Activates |

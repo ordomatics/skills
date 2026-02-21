@@ -205,15 +205,10 @@ with the appropriate tag for this change type.
 
 ## Step 5 — Verify
 
-```bash
-# Update the module (catches XML errors, missing security rows, import errors)
-odoo-bin -d {db} -u {module} --stop-after-init
+Update the module, run its tests, and lint the code using your project's standard
+commands.
 
-# Run tests
-odoo-bin -d {db} --test-enable --stop-after-init --test-tags={module}
+If you have the `odoo-development` plugin installed, the `odoo-developer` agent
+and `odoo-docker-ops` skill know the exact commands for your setup. Ask them:
 
-# Lint
-ruff check {addons_path}/{module} --fix
-```
-
-Adjust the command to match your project's setup (docker compose, virtual env, etc.).
+> "Update and test {module}"
