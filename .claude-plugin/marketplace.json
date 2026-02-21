@@ -26,7 +26,33 @@
     {
       "name": "odoo-development",
       "source": "./plugins/odoo-development",
-      "description": "Odoo module development with version bumping, module validation, and App Store landing page tools",
+      "description": "Generic Odoo 18.0 development base — ORM patterns, module scaffolding, feature development, App Store landing pages",
+      "version": "1.0.0",
+      "author": {
+        "name": "Moctar Diallo",
+        "email": "moctarjallo@gmail.com"
+      },
+      "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "frameworks"
+    },
+    {
+      "name": "odoo-llm-development",
+      "source": "./plugins/odoo-llm-development",
+      "description": "Odoo LLM/AI module development for the odoo-llm suite — provider dispatch, LLM integrations, queue jobs, 33+ module architecture",
+      "version": "1.0.0",
+      "author": {
+        "name": "Moctar Diallo",
+        "email": "moctarjallo@gmail.com"
+      },
+      "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "frameworks"
+    },
+    {
+      "name": "odoo-whatsapp-development",
+      "source": "./plugins/odoo-whatsapp-development",
+      "description": "Odoo WhatsApp module development — WhatsApp Business API integration, templates, messaging flows, and whatsapp addons conventions",
       "version": "1.0.0",
       "author": {
         "name": "Moctar Diallo",

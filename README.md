@@ -53,33 +53,63 @@ Skills use progressive disclosure — they load knowledge only when activated:
 
 ---
 
-## `odoo-development` Plugin
+## `odoo-development` Plugin — Generic Base
+
+### Agents
+
+| Agent | Model | Role |
+|---|---|---|
+| `odoo-developer` | Sonnet 4.6 | Generic Odoo 18.0 expertise |
 
 ### Commands
 
 - **`/odoo-development:bump-version`** — Bump an Odoo module version and update changelog/docs
-
-```bash
-/odoo-development:bump-version my_module
-```
-
 - **`/odoo-development:check-module`** — Validate an Odoo module structure and manifest
-
-```bash
-/odoo-development:check-module my_module
-```
-
 - **`/odoo-development:fix-app-store-html`** — Clean up and fix App Store HTML description
-
-```bash
-/odoo-development:fix-app-store-html my_module
-```
 
 ### Skills
 
 | Skill | When It Activates |
 |---|---|
+| `odoo-developer` | Any Odoo module development |
+| `odoo-feature-dev` | Modifying existing Odoo modules |
+| `odoo-module-creator` | Scaffolding new Odoo modules |
 | `odoo-app-landing-page` | Writing or improving Odoo App Store landing pages |
+
+---
+
+## `odoo-llm-development` Plugin — LLM Suite
+
+Extends `odoo-development` with context for the `odoo-llm` suite (`addons/odoo-llm`).
+
+### Agents
+
+| Agent | Model | Role |
+|---|---|---|
+| `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, queue jobs, 33+ modules) |
+
+### Commands
+
+- **`/odoo-llm-development:implement`** — Implement a feature, fix, or refactor in an odoo-llm module
+
+### Skills
+
+| Skill | When It Activates |
+|---|---|
+| `odoo-llm-feature-dev` | Modifying existing odoo-llm modules |
+| `odoo-llm-module-creator` | Creating new modules in the odoo-llm suite |
+
+---
+
+## `odoo-whatsapp-development` Plugin — WhatsApp
+
+Extends `odoo-development` with context for WhatsApp integration modules (`addons/whatsapp`).
+
+### Agents
+
+| Agent | Model | Role |
+|---|---|---|
+| `odoo-whatsapp-developer` | Sonnet 4.6 | WhatsApp module expert (templates, messaging flows, Business API) |
 
 ---
 

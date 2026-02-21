@@ -1,0 +1,10 @@
+{
+  "name": "odoo-development",
+  "version": "1.0.0",
+  "description": "Generic Odoo 18.0 development: ORM patterns, module scaffolding, feature development, App Store landing pages",
+  "author": {
+    "name": "Moctar Diallo",
+    "email": "moctarjallo@gmail.com"
+  },
+  "license": "MIT"
+}

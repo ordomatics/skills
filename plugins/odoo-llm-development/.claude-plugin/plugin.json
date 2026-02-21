@@ -1,0 +1,10 @@
+{
+  "name": "odoo-llm-development",
+  "version": "1.0.0",
+  "description": "Odoo LLM/AI module development for the odoo-llm suite — provider dispatch pattern, LLM integrations, queue jobs, and 33+ module architecture",
+  "author": {
+    "name": "Moctar Diallo",
+    "email": "moctarjallo@gmail.com"
+  },
+  "license": "MIT"
+}
