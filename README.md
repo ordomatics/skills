@@ -63,6 +63,7 @@ Skills use progressive disclosure — they load knowledge only when activated:
 
 ### Commands
 
+- **`/odoo-development:implement`** — Implement a feature, fix, refactor, or migration in any Odoo module
 - **`/odoo-development:bump-version`** — Bump an Odoo module version and update changelog/docs
 - **`/odoo-development:check-module`** — Validate an Odoo module structure and manifest
 - **`/odoo-development:fix-app-store-html`** — Clean up and fix App Store HTML description
