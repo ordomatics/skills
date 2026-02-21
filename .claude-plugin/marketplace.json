@@ -74,6 +74,19 @@
       "homepage": "https://github.com/moctarjallo/skills",
       "license": "MIT",
       "category": "frameworks"
+    },
+    {
+      "name": "ai-development",
+      "source": "./plugins/ai-development",
+      "description": "AI memory skill — persistent cross-session memory for Claude using a JSON-backed store with categories, tags, and confidence scores",
+      "version": "1.0.0",
+      "author": {
+        "name": "Moctar Diallo",
+        "email": "moctarjallo@gmail.com"
+      },
+      "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "ai"
     }
   ]
 }

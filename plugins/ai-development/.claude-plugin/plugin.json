@@ -1,0 +1,10 @@
+{
+  "name": "ai-development",
+  "version": "1.0.0",
+  "description": "AI memory skill — persistent cross-session memory for Claude using a JSON-backed store with categories, tags, and confidence scores",
+  "author": {
+    "name": "Moctar Diallo",
+    "email": "moctarjallo@gmail.com"
+  },
+  "license": "MIT"
+}

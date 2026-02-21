@@ -64,14 +64,6 @@ Covers the Odoo project itself: Docker stack, entrypoint, environment, module se
 |---|---|---|
 | `odoo-developer` | Sonnet 4.6 | Docker, entrypoint, env, CI/CD, module setup |
 
-### Skills
-
-| Skill | When It Activates |
-|---|---|
-| `odoo-docker-ops` | Docker Compose operations, image builds, logs |
-| `odoo-module-setup` | Module installation, setup_odoo_modules.sh |
-| `odoo-cicd` | GitHub Actions / GitLab CI pipeline management |
-
 ---
 
 ## `odoo-module-development` Plugin — Module Code Base
@@ -95,7 +87,6 @@ Generic Odoo 18.0 module development patterns.
 
 | Skill | When It Activates |
 |---|---|
-| `odoo-module-developer` | Any Odoo module development |
 | `odoo-feature-dev` | Modifying existing Odoo modules |
 | `odoo-module-creator` | Scaffolding new Odoo modules |
 | `odoo-app-landing-page` | Writing or improving Odoo App Store landing pages |
@@ -112,13 +103,6 @@ Extends `odoo-module-development` with context for the `odoo-llm` suite (`addons
 |---|---|---|
 | `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, queue jobs, 33+ modules) |
 
-### Skills
-
-| Skill | When It Activates |
-|---|---|
-| `odoo-llm-feature-dev` | Modifying existing odoo-llm modules |
-| `odoo-llm-module-creator` | Creating new modules in the odoo-llm suite |
-
 ---
 
 ## `odoo-whatsapp-development` Plugin — WhatsApp
@@ -130,6 +114,18 @@ Extends `odoo-module-development` with context for WhatsApp integration modules 
 | Agent | Model | Role |
 |---|---|---|
 | `odoo-whatsapp-developer` | Sonnet 4.6 | WhatsApp module expert (templates, messaging flows, Business API) |
+
+---
+
+## `ai-development` Plugin — AI Memory
+
+Persistent cross-session memory for Claude using a JSON-backed store.
+
+### Skills
+
+| Skill | When It Activates |
+|---|---|
+| `memory` | Storing, retrieving, or searching persistent memories across sessions |
 
 ---
 
