@@ -16,8 +16,8 @@ A modular plugin system for [Claude Code](https://docs.claude.com/en/docs/claude
 
 ```bash
 /plugin install python-development
-/plugin install odoo-development       # Odoo project infra
-/plugin install odoo-module-development  # Odoo module code
+/plugin install odoo-module-development  # generic Odoo module patterns
+/plugin install odoo-development         # Ordomatics project context
 ```
 
 ---
@@ -54,15 +54,18 @@ Skills use progressive disclosure — they load knowledge only when activated:
 
 ---
 
-## `odoo-development` Plugin — Project Infrastructure
+## `odoo-development` Plugin — Ordomatics Project Context
 
-Covers the Odoo project itself: Docker stack, entrypoint, environment, module setup, CI/CD.
+Project-specific context for the Ordomatics Odoo stack: infrastructure, LLM suite, and WhatsApp modules.
+Pair with `odoo-module-development` for full Odoo coverage.
 
 ### Agents
 
 | Agent | Model | Role |
 |---|---|---|
 | `odoo-developer` | Sonnet 4.6 | Docker, entrypoint, env, CI/CD, module setup |
+| `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, dependency chain, 34 modules) |
+| `odoo-whatsapp-developer` | Sonnet 4.6 | WhatsApp module expert (templates, messaging flows, Business API) |
 
 ### Skills
 
@@ -71,12 +74,15 @@ Covers the Odoo project itself: Docker stack, entrypoint, environment, module se
 | `odoo-docker-ops` | Docker Compose operations, image builds, logs |
 | `odoo-module-setup` | Module installation, setup_odoo_modules.sh, .env config |
 | `odoo-cicd` | GitHub Actions / GitLab CI pipeline management, submodules |
+| `odoo-llm-provider-dispatch` | Adding or extending an LLM provider module |
+| `odoo-whatsapp-templates` | Defining templates, variable mapping, Meta approval flow |
+| `odoo-whatsapp-messaging` | Sending messages, composer wizard, delivery status tracking |
 
 ---
 
-## `odoo-module-development` Plugin — Module Code Base
+## `odoo-module-development` Plugin — Generic Odoo Patterns
 
-Generic Odoo 18.0 module development patterns.
+Generic Odoo 18.0 module development patterns — works with any Odoo project.
 
 ### Agents
 
@@ -103,43 +109,6 @@ Generic Odoo 18.0 module development patterns.
 | `odoo-wizard-patterns` | TransientModel wizards, multi-record, return actions |
 | `odoo-controller-patterns` | HTTP routes, JSON endpoints, webhook receivers |
 | `odoo-queue-job-patterns` | OCA queue_job async execution, channels, retries |
-
----
-
-## `odoo-llm-development` Plugin — LLM Suite
-
-Extends `odoo-module-development` with context for the `odoo-llm` suite (`addons/odoo-llm`).
-
-### Agents
-
-| Agent | Model | Role |
-|---|---|---|
-| `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, dependency chain, 34 modules) |
-
-### Skills
-
-| Skill | When It Activates |
-|---|---|
-| `odoo-llm-provider-dispatch` | Adding or extending an LLM provider module |
-
----
-
-## `odoo-whatsapp-development` Plugin — WhatsApp
-
-Extends `odoo-module-development` with context for WhatsApp integration modules (`addons/whatsapp`).
-
-### Agents
-
-| Agent | Model | Role |
-|---|---|---|
-| `odoo-whatsapp-developer` | Sonnet 4.6 | WhatsApp module expert (templates, messaging flows, Business API) |
-
-### Skills
-
-| Skill | When It Activates |
-|---|---|
-| `odoo-whatsapp-templates` | Defining templates, variable mapping, Meta approval flow |
-| `odoo-whatsapp-messaging` | Sending messages, composer wizard, delivery status tracking |
 
 ---
 

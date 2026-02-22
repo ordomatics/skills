@@ -1,7 +1,7 @@
 {
   "name": "odoo-development",
-  "version": "1.0.0",
-  "description": "Odoo project development — Docker stack, entrypoint, module setup scripts, CI/CD pipelines, environment configuration",
+  "version": "2.0.0",
+  "description": "Ordomatics Odoo project context — Docker stack, CI/CD, LLM suite (odoo-llm), WhatsApp modules, and project infrastructure",
   "author": {
     "name": "Moctar Diallo",
     "email": "moctarjallo@gmail.com"
