@@ -104,25 +104,10 @@ def _compute_count(self):
 </record>
 ```
 
-## Security Conventions
+## Available Skills
 
-```csv
-# ir.model.access.csv — users get read/write/create but not unlink
-access_mymodel_user,mymodel user,model_mymodule_mymodel,base.group_user,1,1,1,0
-access_mymodel_manager,mymodel manager,model_mymodule_mymodel,base.group_system,1,1,1,1
-```
-
-`model_id:id` = `model_` + `_name` with dots → underscores.
-
-## Mail Integration
-
-```python
-# Odoo 18 Store serialization
-from odoo.addons.mail.tools.discuss import Store
-store = Store()
-message._to_store(store)
-result = store.get_result()["mail.message"][0]
-```
+- **`odoo-mail-integration`** — `mail.thread` inheritance, posting messages, subtypes, followers, Store serialization
+- **`odoo-security-patterns`** — `ir.model.access.csv` reference, `ir.rule` record-level rules, group field visibility, `sudo()` patterns
 
 ## Wizard Pattern
 

@@ -32,39 +32,10 @@ llm (base)
 
 ## Provider Dispatch Pattern
 
-The core extensibility mechanism — understand it deeply:
+Core extensibility: `_dispatch(method)` routes `llm.provider.chat()` → `{service}_chat()`.
+All methods on a provider module are prefixed with the service name.
 
-```python
-# Base module defines the public interface
-class LLMProvider(models.Model):
-    _name = "llm.provider"
-
-    def chat(self, messages, model=None, **kwargs):
-        return self._dispatch("chat", messages, model=model, **kwargs)
-
-    def _dispatch(self, method, *args, record=None, **kwargs):
-        service_method = f"{self.service}_{method}"
-        record = record if record else self
-        if not hasattr(record, service_method):
-            raise NotImplementedError(f"{service_method} not implemented")
-        return getattr(record, service_method)(*args, **kwargs)
-
-# Provider module implements service-prefixed methods
-class LLMProvider(models.Model):
-    _inherit = "llm.provider"
-
-    @api.model
-    def _get_available_services(self):
-        return super()._get_available_services() + [("myservice", "My Service")]
-
-    def myservice_get_client(self):    # called via self.client
-        return MySDK(api_key=self.api_key)
-
-    def myservice_chat(self, messages, model=None, stream=False, **kwargs): ...
-    def myservice_format_messages(self, messages, system_prompt=None, model=None): ...
-    def myservice_models(self, model_id=None):
-        yield {"name": m.id, "details": {}}
-```
+Load the **`odoo-llm-provider-dispatch`** skill for the full implementation pattern.
 
 ## Mail Integration (llm-specific)
 

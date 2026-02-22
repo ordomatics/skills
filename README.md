@@ -64,6 +64,14 @@ Covers the Odoo project itself: Docker stack, entrypoint, environment, module se
 |---|---|---|
 | `odoo-developer` | Sonnet 4.6 | Docker, entrypoint, env, CI/CD, module setup |
 
+### Skills
+
+| Skill | When It Activates |
+|---|---|
+| `odoo-docker-ops` | Docker Compose operations, image builds, logs |
+| `odoo-module-setup` | Module installation, setup_odoo_modules.sh, .env config |
+| `odoo-cicd` | GitHub Actions / GitLab CI pipeline management, submodules |
+
 ---
 
 ## `odoo-module-development` Plugin — Module Code Base
@@ -90,6 +98,8 @@ Generic Odoo 18.0 module development patterns.
 | `odoo-feature-dev` | Modifying existing Odoo modules |
 | `odoo-module-creator` | Scaffolding new Odoo modules |
 | `odoo-app-landing-page` | Writing or improving Odoo App Store landing pages |
+| `odoo-mail-integration` | Adding chatter, posting messages, mail subtypes, followers |
+| `odoo-security-patterns` | ir.model.access.csv, ir.rule, group visibility, sudo() |
 
 ---
 
@@ -102,6 +112,12 @@ Extends `odoo-module-development` with context for the `odoo-llm` suite (`addons
 | Agent | Model | Role |
 |---|---|---|
 | `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, queue jobs, 33+ modules) |
+
+### Skills
+
+| Skill | When It Activates |
+|---|---|
+| `odoo-llm-provider-dispatch` | Adding or extending an LLM provider module |
 
 ---
 
