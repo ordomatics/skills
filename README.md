@@ -82,7 +82,7 @@ Generic Odoo 18.0 module development patterns.
 
 | Agent | Model | Role |
 |---|---|---|
-| `odoo-module-developer` | Sonnet 4.6 | Generic Odoo 18.0 ORM, views, security expertise |
+| `odoo-module-developer` | Sonnet 4.6 | Odoo 18.0 ORM, views, model structure, module conventions |
 
 ### Commands
 
@@ -100,6 +100,9 @@ Generic Odoo 18.0 module development patterns.
 | `odoo-app-landing-page` | Writing or improving Odoo App Store landing pages |
 | `odoo-mail-integration` | Adding chatter, posting messages, mail subtypes, followers |
 | `odoo-security-patterns` | ir.model.access.csv, ir.rule, group visibility, sudo() |
+| `odoo-wizard-patterns` | TransientModel wizards, multi-record, return actions |
+| `odoo-controller-patterns` | HTTP routes, JSON endpoints, webhook receivers |
+| `odoo-queue-job-patterns` | OCA queue_job async execution, channels, retries |
 
 ---
 
@@ -111,7 +114,7 @@ Extends `odoo-module-development` with context for the `odoo-llm` suite (`addons
 
 | Agent | Model | Role |
 |---|---|---|
-| `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, queue jobs, 33+ modules) |
+| `odoo-llm-developer` | Sonnet 4.6 | odoo-llm suite expert (provider dispatch, dependency chain, 34 modules) |
 
 ### Skills
 
@@ -130,6 +133,13 @@ Extends `odoo-module-development` with context for WhatsApp integration modules 
 | Agent | Model | Role |
 |---|---|---|
 | `odoo-whatsapp-developer` | Sonnet 4.6 | WhatsApp module expert (templates, messaging flows, Business API) |
+
+### Skills
+
+| Skill | When It Activates |
+|---|---|
+| `odoo-whatsapp-templates` | Defining templates, variable mapping, Meta approval flow |
+| `odoo-whatsapp-messaging` | Sending messages, composer wizard, delivery status tracking |
 
 ---
 

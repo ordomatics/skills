@@ -24,54 +24,10 @@ Odoo's built-in `whatsapp` module provides:
 - `whatsapp.template` — Message templates (must be approved by Meta)
 - `whatsapp.composer` — Wizard for sending messages from any model
 
-### Extending WhatsApp to a New Model
+## Available Skills
 
-To add WhatsApp messaging to an existing model (e.g. `sale.order`):
-
-1. Inherit `whatsapp.composer` to add your model's context
-2. Add a `whatsapp_message_ids` One2many to your model (optional)
-3. Add an action button that opens the composer wizard
-
-```python
-# models/sale_order.py
-class SaleOrder(models.Model):
-    _inherit = "sale.order"
-
-    whatsapp_message_ids = fields.One2many(
-        "whatsapp.message", "res_id",
-        domain=[("model", "=", "sale.order")],
-        string="WhatsApp Messages",
-    )
-```
-
-### Sending a Templated Message Programmatically
-
-```python
-account = self.env["whatsapp.account"].search([], limit=1)
-if not account:
-    raise UserError(_("No WhatsApp account configured."))
-
-template = self.env.ref("my_module.whatsapp_template_mytemplate")
-self.env["whatsapp.message"].create({
-    "mobile_number": partner.mobile,
-    "wa_account_id": account.id,
-    "whatsapp_template_id": template.id,
-    "res_id": self.id,
-    "model": self._name,
-})
-```
-
-### Template Definition
-
-```xml
-<record id="whatsapp_template_mytemplate" model="whatsapp.template">
-    <field name="name">my_template_name</field>
-    <field name="body">Hello {{1}}, your order {{2}} is confirmed.</field>
-    <field name="wa_account_id" ref="base_setup.whatsapp_account_demo"/>
-    <field name="status">approved</field>
-    <field name="model_id" ref="sale.model_sale_order"/>
-</record>
-```
+- **`odoo-whatsapp-templates`** — template XML definition, variable mapping, Meta approval workflow
+- **`odoo-whatsapp-messaging`** — adding `whatsapp_message_ids` to a model, sending programmatically, composer wizard, delivery status tracking
 
 ## Locating Files
 

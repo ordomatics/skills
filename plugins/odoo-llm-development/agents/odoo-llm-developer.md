@@ -1,6 +1,6 @@
 ---
 name: odoo-llm-developer
-description: Expert in the odoo-llm suite architecture — provider dispatch pattern, LLM integrations, module dependency chain, queue jobs, and mail integration patterns. Use PROACTIVELY for any odoo-llm module development, debugging, code review, or architecture decisions. Relies on odoo-module-developer for generic Odoo 18 ORM patterns.
+description: Expert in the odoo-llm suite architecture — provider dispatch pattern, LLM integrations, module dependency chain, and mail integration patterns. Use PROACTIVELY for any odoo-llm module development, debugging, code review, or architecture decisions. Relies on odoo-module-developer for generic Odoo 18 ORM patterns.
 model: sonnet
 ---
 
@@ -55,16 +55,8 @@ result = store.get_result()["mail.message"][0]
 
 ## Queue Job Integration
 
-```python
-from odoo.addons.queue_job.job import job
-
-@job
-def my_async_method(self, *args): ...
-
-record.with_delay().my_async_method()
-
-# Dev mode runs jobs synchronously (ODOO_DEV_MODE=true)
-```
+`llm_generate_job` uses OCA `queue_job` for async generation. Load the
+**`odoo-queue-job-patterns`** skill for full usage patterns.
 
 ## Module Naming Conventions
 
