@@ -18,6 +18,7 @@ A modular plugin system for [Claude Code](https://docs.claude.com/en/docs/claude
 /plugin install python-development
 /plugin install odoo-module-development  # generic Odoo module patterns
 /plugin install odoo-development         # Ordomatics project context
+/plugin install ai-development           # plugin development toolkit
 ```
 
 ---
@@ -112,14 +113,37 @@ Generic Odoo 18.0 module development patterns — works with any Odoo project.
 
 ---
 
-## `ai-development` Plugin — AI Memory
+## `ai-development` Plugin — Plugin Development Toolkit
 
-Persistent cross-session memory for Claude using a JSON-backed store.
+Create, validate, and maintain Claude Code plugins, skills, agents, and commands following best practices. Also includes persistent cross-session memory.
+
+### Agents
+
+| Agent | Model | Role |
+|---|---|---|
+| `plugin-architect` | Opus 4.6 | Design, create, validate, and improve plugins and their components |
+
+### Commands
+
+- **`/ai-development:create-plugin`** — Scaffold a new plugin with agents, skills, and commands
+- **`/ai-development:validate-plugin`** — Audit a plugin for structural correctness and quality
+- **`/ai-development:add-component`** — Add a skill, agent, or command to an existing plugin
+
+```bash
+/ai-development:create-plugin devops-toolkit Infrastructure and deployment patterns
+/ai-development:validate-plugin odoo-module-development
+/ai-development:add-component skill python-development python-caching Caching strategies
+```
 
 ### Skills
 
 | Skill | When It Activates |
 |---|---|
+| `plugin-architecture` | Creating a new plugin, understanding plugin structure, marketplace registration |
+| `skill-writing` | Writing or improving a SKILL.md file |
+| `agent-writing` | Writing or improving an agent .md file |
+| `command-writing` | Writing or improving a command .md workflow |
+| `marketplace-management` | Adding/removing plugins, bumping versions, auditing the marketplace |
 | `memory` | Storing, retrieving, or searching persistent memories across sessions |
 
 ---

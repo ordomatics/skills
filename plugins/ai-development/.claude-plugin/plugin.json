@@ -1,7 +1,7 @@
 {
   "name": "ai-development",
-  "version": "1.0.0",
-  "description": "AI memory skill — persistent cross-session memory for Claude using a JSON-backed store with categories, tags, and confidence scores",
+  "version": "2.0.0",
+  "description": "Plugin development toolkit — create, validate, and maintain Claude Code plugins, skills, agents, and commands following best practices. Also includes persistent cross-session memory.",
   "author": {
     "name": "Moctar Diallo",
     "email": "moctarjallo@gmail.com"

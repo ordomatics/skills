@@ -6,8 +6,8 @@
     "url": "https://github.com/moctarjallo"
   },
   "metadata": {
-    "description": "Production-ready workflow orchestration with 72 focused plugins, 112 specialized agents, and 146 skills - optimized for granular installation and minimal token usage",
-    "version": "1.5.3"
+    "description": "Claude Code plugin marketplace — 4 plugins with specialized agents, skills, and commands for Python, Odoo, and plugin development",
+    "version": "1.6.0"
   },
   "plugins": [
     {
@@ -15,10 +15,7 @@
       "source": "./plugins/python-development",
       "description": "Modern Python development with Python 3.12+, Django, FastAPI, async patterns, and production best practices",
       "version": "1.2.1",
-      "author": {
-        "name": "Moctar Diallo",
-        "email": "moctarjallo@gmail.com"
-      },
+      "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
       "homepage": "https://github.com/moctarjallo/skills",
       "license": "MIT",
       "category": "languages"
@@ -28,10 +25,7 @@
       "source": "./plugins/odoo-development",
       "description": "Ordomatics Odoo project context — Docker stack, CI/CD, LLM suite (odoo-llm, 34 modules), WhatsApp modules, and project infrastructure",
       "version": "2.0.0",
-      "author": {
-        "name": "Moctar Diallo",
-        "email": "moctarjallo@gmail.com"
-      },
+      "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
       "homepage": "https://github.com/moctarjallo/skills",
       "license": "MIT",
       "category": "frameworks"
@@ -41,10 +35,7 @@
       "source": "./plugins/odoo-module-development",
       "description": "Generic Odoo 18.0 module development — ORM patterns, module scaffolding, feature development, App Store landing pages",
       "version": "1.0.0",
-      "author": {
-        "name": "Moctar Diallo",
-        "email": "moctarjallo@gmail.com"
-      },
+      "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
       "homepage": "https://github.com/moctarjallo/skills",
       "license": "MIT",
       "category": "frameworks"
@@ -52,12 +43,9 @@
     {
       "name": "ai-development",
       "source": "./plugins/ai-development",
-      "description": "AI memory skill — persistent cross-session memory for Claude using a JSON-backed store with categories, tags, and confidence scores",
-      "version": "1.0.0",
-      "author": {
-        "name": "Moctar Diallo",
-        "email": "moctarjallo@gmail.com"
-      },
+      "description": "Plugin development toolkit — create, validate, and maintain Claude Code plugins, skills, agents, and commands following best practices. Also includes persistent cross-session memory.",
+      "version": "2.0.0",
+      "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
       "homepage": "https://github.com/moctarjallo/skills",
       "license": "MIT",
       "category": "ai"
