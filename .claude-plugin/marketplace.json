@@ -11,8 +11,8 @@
   },
   "plugins": [
     {
-      "name": "python-development",
-      "source": "./plugins/python-development",
+      "name": "python-dev",
+      "source": "./plugins/python-dev",
       "description": "Modern Python development with Python 3.12+, Django, FastAPI, async patterns, and production best practices",
       "version": "1.2.1",
       "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
@@ -21,8 +21,8 @@
       "category": "languages"
     },
     {
-      "name": "odoo-development",
-      "source": "./plugins/odoo-development",
+      "name": "odoo-dev",
+      "source": "./plugins/odoo-dev",
       "description": "Ordomatics Odoo project context — Docker stack, CI/CD, LLM suite (odoo-llm, 34 modules), WhatsApp modules, and project infrastructure",
       "version": "2.0.0",
       "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
@@ -31,8 +31,8 @@
       "category": "frameworks"
     },
     {
-      "name": "odoo-module-development",
-      "source": "./plugins/odoo-module-development",
+      "name": "odoo-module-dev",
+      "source": "./plugins/odoo-module-dev",
       "description": "Generic Odoo 18.0 module development — ORM patterns, module scaffolding, feature development, App Store landing pages",
       "version": "1.0.0",
       "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
@@ -41,8 +41,8 @@
       "category": "frameworks"
     },
     {
-      "name": "ai-development",
-      "source": "./plugins/ai-development",
+      "name": "ai-dev",
+      "source": "./plugins/ai-dev",
       "description": "Plugin development toolkit — create, validate, and maintain Claude Code plugins, skills, agents, and commands following best practices. Also includes persistent cross-session memory.",
       "version": "2.0.0",
       "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},

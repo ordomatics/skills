@@ -1,5 +1,5 @@
 {
-  "name": "ai-development",
+  "name": "ai-dev",
   "version": "2.0.0",
   "description": "Plugin development toolkit — create, validate, and maintain Claude Code plugins, skills, agents, and commands following best practices. Also includes persistent cross-session memory.",
   "author": {

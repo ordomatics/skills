@@ -1,5 +1,5 @@
 {
-  "name": "odoo-development",
+  "name": "odoo-dev",
   "version": "2.0.0",
   "description": "Ordomatics Odoo project context — Docker stack, CI/CD, LLM suite (odoo-llm), WhatsApp modules, and project infrastructure",
   "author": {

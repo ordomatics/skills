@@ -1,5 +1,5 @@
 {
-  "name": "odoo-module-development",
+  "name": "odoo-module-dev",
   "version": "1.0.0",
   "description": "Generic Odoo 18.0 development: ORM patterns, module scaffolding, feature development, App Store landing pages",
   "author": {
