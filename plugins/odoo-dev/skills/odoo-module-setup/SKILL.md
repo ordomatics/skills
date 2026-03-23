@@ -41,7 +41,7 @@ DB_NAME=odoo
 
 # Odoo
 ODOO_DEV_MODE=true        # true = dev mode, false = prod
-ODOO_MASTER_PASSWORD=...           # master password
+ADMIN_PASSWD=...           # master password
 
 # Queue jobs
 ODOO_QUEUE_JOB_CHANNELS=root:2,whatsapp:1

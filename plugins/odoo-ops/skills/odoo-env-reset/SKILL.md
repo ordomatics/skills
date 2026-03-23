@@ -57,7 +57,7 @@ microk8s kubectl create secret docker-registry gitlab-registry \
 
 ### ordomatics-{ENV}-secrets
 
-**CRITICAL: `ODOO_MASTER_PASSWORD` must be set — missing it causes an immediate pod crash.**
+**CRITICAL: `ADMIN_PASSWD` must be set — missing it causes an immediate pod crash.**
 
 For **dev** (in-cluster postgres, password is literal "odoo"):
 ```bash
@@ -68,7 +68,7 @@ microk8s kubectl create secret generic ordomatics-dev-secrets \
   --from-literal=DB_USER=odoo \
   --from-literal=DB_PASSWORD=odoo \
   --from-literal=DB_NAME=odoo \
-  --from-literal=ODOO_MASTER_PASSWORD="${ODOO_MASTER_PASSWORD}" \
+  --from-literal=ADMIN_PASSWD="${ODOO_MASTER_PASSWORD}" \
   --from-literal=DB_URI="" \
   --from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY:-}" \
@@ -180,7 +180,7 @@ curl http://{ENV}.ordomatics.local/web/health
 | Symptom | Cause | Fix |
 |---|---|---|
 | `ImagePullBackOff` | `gitlab-registry` secret missing or wrong token | Recreate the secret |
-| Pod crash at startup | `ODOO_MASTER_PASSWORD` not in secrets | Add it to the secret |
+| Pod crash at startup | `ADMIN_PASSWD` not in secrets | Add it to the secret |
 | Namespace stuck Terminating | ArgoCD job finalizer | Patch `finalizers: null` on jobs (Step 1) |
 | ArgoCD `ComparisonError: connection refused` | Repo server crash-loop | `kubectl rollout restart deployment argocd-repo-server -n argocd` |
 | Pods `ContainerCreating` with no events for >5 min | Odoo image not in containerd | Import via microk8s ctr (Step 7) |
