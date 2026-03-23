@@ -6,8 +6,8 @@
     "url": "https://github.com/moctarjallo"
   },
   "metadata": {
-    "description": "Claude Code plugin marketplace — 4 plugins with specialized agents, skills, and commands for Python, Odoo, and plugin development",
-    "version": "1.6.0"
+    "description": "Claude Code plugin marketplace — 5 plugins with specialized agents, skills, and commands for Python, Odoo, plugin development, and infrastructure operations",
+    "version": "1.7.0"
   },
   "plugins": [
     {
@@ -49,6 +49,16 @@
       "homepage": "https://github.com/moctarjallo/skills",
       "license": "MIT",
       "category": "ai"
+    },
+    {
+      "name": "odoo-ops",
+      "source": "./plugins/odoo-ops",
+      "description": "Operational runbooks for Ordomatics infrastructure — K8s environment resets, ArgoCD sync, and Supabase circuit breaker recovery",
+      "version": "1.0.0",
+      "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
+      "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "devops"
     }
   ]
 }
