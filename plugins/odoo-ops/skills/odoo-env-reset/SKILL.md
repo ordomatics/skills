@@ -68,7 +68,7 @@ microk8s kubectl create secret generic ordomatics-dev-secrets \
   --from-literal=DB_USER=odoo \
   --from-literal=DB_PASSWORD=odoo \
   --from-literal=DB_NAME=odoo \
-  --from-literal=ADMIN_PASSWD="${ODOO_MASTER_PASSWORD}" \
+  --from-literal=ADMIN_PASSWD="${ADMIN_PASSWD}" \
   --from-literal=DB_URI="" \
   --from-literal=ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
   --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY:-}" \
