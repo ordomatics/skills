@@ -1,5 +1,5 @@
 {
   "name": "odoo-ops",
   "version": "1.0.0",
-  "description": "Operational runbooks for Ordomatics infrastructure. Use when the user needs to wipe and redeploy a K8s environment, sync an ArgoCD application, or recover from a Supabase circuit breaker error. Trigger phrases: 'reset the dev environment', 'wipe and redeploy', 'ArgoCD isn't picking up my commit', 'circuit breaker is open', 'too many authentication errors'."
+  "description": "Operational runbooks for Ordomatics infrastructure. Use when the user needs to wipe and redeploy a K8s environment, sync an ArgoCD application, recover from a Supabase circuit breaker error, or destroy and recreate the ephemeral DOKS test cluster. Trigger phrases: 'reset the dev environment', 'wipe and redeploy', 'ArgoCD isn't picking up my commit', 'circuit breaker is open', 'too many authentication errors', 'redeploy the test cluster', 'full cycle on test', 'rebuild the cluster from scratch'."
 }
