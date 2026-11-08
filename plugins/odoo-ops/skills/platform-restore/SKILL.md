@@ -31,6 +31,12 @@ Workspace starts with empty state and **creates new, empty resources**:
 production would come back on blank databases (same failure class as the
 2026-10-02 smartacus duplicate). Hence: pause first, adopt, then unpause.
 
+**Since 2026-11 the state is backed up:** `platform/tfstate-backup` uploads every
+workspace's state hourly, age-encrypted, to the generic package registry of
+`ordomatics/infra` (package `tfstate`, version `current`). With that backup,
+step 6 is a restore, not an import. The private age key is the user's (their
+password manager): ask for it.
+
 If the old control plane still answers (`kubectl -n crossplane-system get
 secrets -l tfstate=true` on the old kubeconfig: LKE kept answering for ~2 days
 after the nodes died), **copy those Secrets out first** and skip step 5's
@@ -74,6 +80,7 @@ Read each variable's `masked`/`protected` first and keep them.
 | `GITLAB_TOKEN` | needs **`api`, `read_registry`, `write_repository`**. A `ci-deploy` token with only repository scopes broke the registry pull secret (403 on `jwt/auth`) and Backstage's GitLab API. Check: `curl -H "PRIVATE-TOKEN: $T" https://gitlab.com/api/v4/personal_access_tokens/self` |
 | `CF_TOKENS_TOKEN` | without it `cloudflare-r2-creds` is never created and every `st-*` Workspace waits forever |
 | `CF_TUNNELS_TOKEN`, `CF_ZONE_ID` | same, for `cloudflare-tunnel-creds` |
+| `TFSTATE_BACKUP_USER`, `TFSTATE_BACKUP_TOKEN` | deploy token on `ordomatics/infra` with `write_package_registry`; without them `tfstate-backup` has no Secret and nothing is backed up |
 
 Compare what `ci/scripts/bootstrap-argocd.sh` reads with what GitLab has:
 `grep -oE '\$\{?[A-Z][A-Z0-9_]+' ci/scripts/bootstrap-argocd.sh | sort -u`
@@ -124,7 +131,21 @@ curl -s -H "Authorization: Bearer $L" https://api.linode.com/v4/lke/clusters/$ID
 `kubectl get workspaces.tf.upbound.io` must list only `cc-<clients cluster>`;
 every claim shows `SYNCED False`.
 
-### 6. Adopt the existing resources into Terraform state
+### 6. Put the Terraform state back
+
+**6a. From the backup (normal case).** With the user's age key file:
+
+```bash
+bash <skill>/references/restore-state.sh <age-key-file> ~/.kube/ordomatics-platform-new.yaml
+```
+
+It leaves out `tfstate-cc-*` unless given `--same-account`. On a new account the
+clients cluster must be created anew, and its old state names the old cluster.
+Then go to step 7: the first unpaused claim's Workspace must reconcile with
+nothing to change. Claims created after the last backup (at most an hour old)
+are missing from it; adopt those with 6b.
+
+**6b. By import (no backup, or claims newer than it).**
 
 ```bash
 cd ~/projects/ordomatics/platform
@@ -248,7 +269,5 @@ press restore":
    plugin dir).
 3. `bootstrap-platform` checks its required variables (and `GITLAB_TOKEN`'s
    scopes) up front instead of silently skipping credentials.
-4. A scheduled export of `tfstate-*` Secrets to R2, so a lost cluster loses
-   nothing and step 6 becomes a plain restore.
-5. A `restore-deployments` mode that triggers Odoo's Redeploy for every
+4. A `restore-deployments` mode that triggers Odoo's Redeploy for every
    deployment once ordomatics-prod is up.
