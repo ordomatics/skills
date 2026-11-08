@@ -148,6 +148,20 @@ Create, validate, and maintain Claude Code plugins, skills, agents, and commands
 
 ---
 
+## `odoo-ops` Plugin — Operational Runbooks
+
+### Skills
+
+| Skill | Use when |
+|-------|----------|
+| `odoo-env-reset` | Wiping and redeploying a K8s environment |
+| `argocd-sync` | ArgoCD isn't picking up a commit |
+| `supabase-recovery` | Supabase circuit breaker / too many authentication errors |
+| `doks-redeploy` | Destroying and recreating the ephemeral DOKS test cluster |
+| `platform-restore` | Restoring the whole platform onto a new cloud account: pause the Terraform-backed claims, adopt existing Neon/R2 resources into state, then bring every deployment back |
+
+---
+
 ## Example Workflow
 
 ```bash
