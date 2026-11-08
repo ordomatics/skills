@@ -80,6 +80,7 @@ Read each variable's `masked`/`protected` first and keep them.
 | `GITLAB_TOKEN` | needs **`api`, `read_registry`, `write_repository`**. A `ci-deploy` token with only repository scopes broke the registry pull secret (403 on `jwt/auth`) and Backstage's GitLab API. Check: `curl -H "PRIVATE-TOKEN: $T" https://gitlab.com/api/v4/personal_access_tokens/self` |
 | `CF_TOKENS_TOKEN` | without it `cloudflare-r2-creds` is never created and every `st-*` Workspace waits forever |
 | `CF_TUNNELS_TOKEN`, `CF_ZONE_ID` | same, for `cloudflare-tunnel-creds` |
+| `STOREFRONT_RESEND_API_KEY`, `STOREFRONT_GOOGLE_CLIENT_ID`, `STOREFRONT_GOOGLE_CLIENT_SECRET` | `storefront-email` was once made by hand; without these the storefront server stays in CreateContainerConfigError |
 | `TFSTATE_BACKUP_USER`, `TFSTATE_BACKUP_TOKEN` | deploy token on `ordomatics/infra` with `write_package_registry`; without them `tfstate-backup` has no Secret and nothing is backed up |
 
 Compare what `ci/scripts/bootstrap-argocd.sh` reads with what GitLab has:
@@ -243,7 +244,14 @@ credentials still work.
 
 - Each production namespace: pods Running, upgrade Jobs Complete, site 200.
 - Neon project count unchanged; `kubectl get workspaces.tf.upbound.io` all True.
-- Degraded leftovers to redeploy the same way: n8n, storefront, Asterisk.
+- n8n comes back with `bootstrap-ordomatics`; storefront with the variables above.
+- **Asterisk is pinned to one node** (`hostNetwork`): its `nodeSelector` hostname
+  and `rtp.externalAddress` in `platform/clusters/<cluster>/cluster-asterisk.yaml`
+  name a node of the OLD cluster. Repoint both to a new node and its public IP
+  (`kubectl get nodes -o wide`). A plain GET on `https://asterisk.<zone>/ws`
+  answering 426 means its WebSocket is up.
+- `cross-cluster` Secrets: `kubectl get objects.kubernetes.crossplane.io` on the
+  platform; any not Synced names the missing source Secret.
 - Revoke the extra GitLab deploy tokens each bootstrap run minted, and the old
   per-bucket R2 tokens (`r2-<bucket>`, duplicated names).
 - Restore anything temporarily rerouted during the outage (see memory
