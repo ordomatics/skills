@@ -242,6 +242,13 @@ credentials still work.
 
 ### 11. Verify, then clean up
 
+- **Own-server databases** (`*-ext-conn` Secrets in `ordomatics-platform`)
+  come back with `restore-state.sh` too since 2026-11-12. If one is still
+  missing, a redeploy fails with "connection secret … is missing from the
+  platform", and Odoo repairs it by itself: it registers the database again
+  with the server's admin login it holds, then retries the deployment.
+  Without an admin login, the database turns `failed` and its owner enters the
+  password again.
 - Each production namespace: pods Running, upgrade Jobs Complete, site 200.
 - Neon project count unchanged; `kubectl get workspaces.tf.upbound.io` all True.
 - n8n comes back with `bootstrap-ordomatics`; storefront with the variables above.
