@@ -1,0 +1,9 @@
+{
+  "name": "ordomatics-connect",
+  "version": "1.0.0",
+  "description": "For Ordomatics customers: run your project on infrastructure you operate. Use when connecting your own Kubernetes cluster to Ordomatics, preparing one (MicroK8s, K3s, a managed cloud cluster), running the portal's connect command, or when the portal reports 'Waiting for you', 'Can't manage your cluster', 'Your cluster refused the token' or 'connector is not running'.",
+  "author": {
+    "name": "Moctar Diallo",
+    "email": "moctarjallo@gmail.com"
+  }
+}

@@ -19,6 +19,7 @@ A modular plugin system for [Claude Code](https://docs.claude.com/en/docs/claude
 /plugin install odoo-module-development  # generic Odoo module patterns
 /plugin install odoo-development         # Ordomatics project context
 /plugin install ai-development           # plugin development toolkit
+/plugin install ordomatics-connect        # Ordomatics customers: connect your own cluster
 ```
 
 ---
@@ -159,6 +160,23 @@ Create, validate, and maintain Claude Code plugins, skills, agents, and commands
 | `supabase-recovery` | Supabase circuit breaker / too many authentication errors |
 | `doks-redeploy` | Destroying and recreating the ephemeral DOKS test cluster |
 | `platform-restore` | Restoring the whole platform onto a new cloud account: pause the Terraform-backed claims, adopt existing Neon/R2 resources into state, then bring every deployment back |
+
+---
+
+## `ordomatics-connect` Plugin — For Ordomatics Customers
+
+```bash
+/plugin marketplace add ordomatics/skills
+/plugin install ordomatics-connect
+```
+
+Then ask Claude, for example, "connect my laptop's MicroK8s to my Ordomatics project".
+
+### Skills
+
+| Skill | Use when |
+|-------|----------|
+| `connect-cluster` | Running your project on a Kubernetes cluster you operate: choosing and preparing one (MicroK8s, K3s without Traefik, a managed cloud cluster), running the portal's connect command, and fixing what the portal reports afterwards |
 
 ---
 

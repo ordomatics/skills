@@ -6,8 +6,8 @@
     "url": "https://github.com/moctarjallo"
   },
   "metadata": {
-    "description": "Claude Code plugin marketplace — 5 plugins with specialized agents, skills, and commands for Python, Odoo, plugin development, and infrastructure operations",
-    "version": "1.8.4"
+    "description": "Claude Code plugin marketplace — 6 plugins with specialized agents, skills, and commands for Python, Odoo, plugin development, infrastructure operations, and connecting your own cluster to Ordomatics",
+    "version": "1.9.0"
   },
   "plugins": [
     {
@@ -57,6 +57,19 @@
       "version": "1.1.4",
       "author": {"name": "Moctar Diallo", "email": "moctarjallo@gmail.com"},
       "homepage": "https://github.com/moctarjallo/skills",
+      "license": "MIT",
+      "category": "devops"
+    },
+    {
+      "name": "ordomatics-connect",
+      "source": "./plugins/ordomatics-connect",
+      "description": "For Ordomatics customers — connect a Kubernetes cluster you operate (MicroK8s, K3s, managed cloud) to your project, and diagnose it afterwards",
+      "version": "1.0.0",
+      "author": {
+        "name": "Moctar Diallo",
+        "email": "moctarjallo@gmail.com"
+      },
+      "homepage": "https://github.com/ordomatics/skills",
       "license": "MIT",
       "category": "devops"
     }
