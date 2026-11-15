@@ -12,7 +12,13 @@ set -euo pipefail
 IDENTITY="$1" KC="$2" SAME="${3:-}"
 tmp=$(mktemp -d); chmod 700 "$tmp"; trap 'rm -rf "$tmp"' EXIT
 
-glab api "projects/ordomatics%2Finfra/packages/generic/tfstate/current/tfstate.json.age" > "$tmp/state.age"
+# curl when GITLAB_TOKEN is set: the snap glab cannot always resolve gitlab.com.
+path="projects/ordomatics%2Finfra/packages/generic/tfstate/current/tfstate.json.age"
+if [ -n "${GITLAB_TOKEN:-}" ]; then
+  curl -fsS -H "PRIVATE-TOKEN: ${GITLAB_TOKEN}" -o "$tmp/state.age" "https://gitlab.com/api/v4/$path"
+else
+  glab api "$path" > "$tmp/state.age"
+fi
 age -d -i "$IDENTITY" -o "$tmp/state.json" "$tmp/state.age"
 
 filter='.'

@@ -259,10 +259,24 @@ credentials still work.
   answering 426 means its WebSocket is up.
 - `cross-cluster` Secrets: `kubectl get objects.kubernetes.crossplane.io` on the
   platform; any not Synced names the missing source Secret.
-- Revoke the extra GitLab deploy tokens each bootstrap run minted, and the old
-  per-bucket R2 tokens (`r2-<bucket>`, duplicated names).
-- Restore anything temporarily rerouted during the outage (see memory
-  `project-odoo-smartacus-pro-temp-redirect`).
+- Revoke the old per-bucket R2 tokens (`r2-<bucket>`, duplicated names).
+  Deploy tokens no longer pile up: since 2026-11-15 create-app-repo reuses
+  each repo's pair kept in `<group>-<repo>-repo-creds`, which the backup holds.
+- Restore anything temporarily rerouted during the outage.
+
+## Drill: prove the backup restores
+
+Without touching the live platform, on a throwaway one-node cluster that is
+deleted on exit (a few cents):
+
+```bash
+export LINODE_API_TOKEN=… GITLAB_TOKEN=…        # from infra/.env
+bash <skill>/references/restore-drill.sh ~/.config/ordomatics-tfstate.age ~/.kube/ordomatics-platform-new.yaml
+```
+
+It restores the latest backup with `restore-state.sh`, then lists Secrets only
+live, only restored, or with different data. Anything there should be younger
+than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 
 ## Common pitfalls
 
@@ -277,12 +291,9 @@ credentials still work.
 ## Next: make it two buttons
 
 What should become pipeline modes in `infra`, so this is "press provision,
-press restore":
+press restore" (done since: no job downloads from GitHub, and
+`bootstrap-platform` checks its variables and token scopes first):
 1. `restore-state`: run steps 4 and 6–7 in CI. Pause, generate,
    plan-gate on "0 to destroy", apply, push, unpause.
-2. Drop the GitHub dependency from every job (provider mirror, or a cached
-   plugin dir).
-3. `bootstrap-platform` checks its required variables (and `GITLAB_TOKEN`'s
-   scopes) up front instead of silently skipping credentials.
-4. A `restore-deployments` mode that triggers Odoo's Redeploy for every
+2. A `restore-deployments` mode that triggers Odoo's Redeploy for every
    deployment once ordomatics-prod is up.
