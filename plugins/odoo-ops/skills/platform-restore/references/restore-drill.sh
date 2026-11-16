@@ -34,14 +34,20 @@ kubectl get ns default >/dev/null
 # Bootstrap creates these on a real restore.
 kubectl create namespace crossplane-system
 kubectl create namespace ordomatics-platform
+kubectl create namespace argocd
 bash "$HERE/restore-state.sh" "$IDENTITY" "$KUBECONFIG"
 
 # name, then a hash of its data: the same in both, except Secrets changed in
 # the hour since the backup.
+# ArgoCD registrations count only for customers' clusters, as in the backup.
 digest() {
   KUBECONFIG="$1" kubectl get secrets -A -o json \
-    | jq -r '.items[] | select(.metadata.namespace == "crossplane-system" or .metadata.namespace == "ordomatics-platform")
-        | select((.metadata.labels.tfstate // "") == "true" or ((.metadata.labels["platform.ordomatics.com/kind"] // "") | test("^(external-postgres|repo-credentials)$")))
+    | jq -r '([.items[] | select((.metadata.labels["platform.ordomatics.com/kind"] // "") == "external-cluster")
+               | .metadata.name | sub("-kubeconfig$"; "")]) as $external
+        | .items[] | select(.metadata.namespace | IN("crossplane-system", "ordomatics-platform", "argocd"))
+        | select((.metadata.labels.tfstate // "") == "true"
+            or ((.metadata.labels["platform.ordomatics.com/kind"] // "") | test("^(external-postgres|external-cluster|repo-credentials)$"))
+            or (.metadata.namespace == "argocd" and (.metadata.name | IN($external[]))))
         | select((.metadata.labels.tfstateWorkspace // "") | (startswith("cc-") or . == "default") | not)
         | "\(.metadata.namespace)/\(.metadata.name) \(.data | tostring | @base64)"' \
     | while read -r name data; do echo "$name $(printf %s "$data" | sha256sum | cut -c1-12)"; done | sort

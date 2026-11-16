@@ -21,7 +21,7 @@ every pitfall below was hit then.
 | Neon projects and databases (the data) | per-deployment Secrets on the clients cluster: registry pull secret, app secret, storage keys |
 | R2 buckets (the filestores) | Backstage's Postgres (task history; acceptable) |
 | GitLab registries, deploy tokens, CI variables | per-bucket R2 access keys (their value is shown once) |
-| Cloudflare zone, tunnels | ArgoCD cluster registrations |
+| Cloudflare zone, tunnels | ArgoCD's registration of our clients cluster (customers' clusters are in the backup) |
 
 **The one dangerous loss is the Terraform state.** Neon projects, branches,
 databases, R2 buckets, tunnels and the clients cluster are all created by
@@ -224,8 +224,11 @@ restore leaves them; asleep ones redeploy asleep. `deploy-branch` recreates thei
 registry and app Secrets from Odoo's records; GitLab deploy tokens survive, so
 the stored registry credentials still work.
 
-A deployment on a customer's cluster waits until its owner reconnects that
-cluster, then redeploys by itself: the job lists it and does not fail on it.
+Customers' clusters come back connected: the backup holds each one's
+connection (`<name>-cluster-kubeconfig`) and ArgoCD registration, and its
+tunnel comes back from state. Only a cluster connected after the last backup
+needs its owner to paste a token again; until then its deployments wait, and
+the job lists them without failing on them.
 The job fails on a deployment that failed on our cluster: open it in Odoo
 (**Retry Upgrade** when an old upgrade Job is in the way, as ged-test's was).
 
@@ -282,6 +285,4 @@ than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 
 ## Next: fewer steps after the restore
 
-1. Back up the ArgoCD registrations of customers' clusters with the state, so
-   their owners need not paste a token again.
-2. Pin Asterisk by a node-pool label rather than a hostname and IP (step 11).
+1. Pin Asterisk by a node-pool label rather than a hostname and IP (step 11).
