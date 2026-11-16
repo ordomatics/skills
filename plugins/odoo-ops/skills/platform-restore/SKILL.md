@@ -82,6 +82,7 @@ Read each variable's `masked`/`protected` first and keep them.
 | `CF_TUNNELS_TOKEN`, `CF_ZONE_ID` | same, for `cloudflare-tunnel-creds` |
 | `STOREFRONT_RESEND_API_KEY`, `STOREFRONT_GOOGLE_CLIENT_ID`, `STOREFRONT_GOOGLE_CLIENT_SECRET` | `storefront-email` was once made by hand; without these the storefront server stays in CreateContainerConfigError |
 | `TFSTATE_BACKUP_USER`, `TFSTATE_BACKUP_TOKEN` | deploy token on `ordomatics/infra` with `write_package_registry`; without them `tfstate-backup` has no Secret and nothing is backed up |
+| `ODOO_RESTORE_LOGIN`, `ODOO_RESTORE_API_KEY` | an Odoo user with rights on deployments and its API key, for `restore-deployments` |
 | `TFSTATE_AGE_KEY` | File variable, protected, masked and hidden: only the `AGE-SECRET-KEY-…` line (a multi-line value cannot be masked). `restore:key-check` proves on every push that it matches the backup's recipient |
 
 Compare what `ci/scripts/bootstrap-argocd.sh` reads with what GitLab has:
@@ -213,13 +214,23 @@ It recommits a simplified `values.prod.yaml`. That's fine for a few minutes;
 the next step restores it. A Pod stuck in ImagePullBackOff picks up a fixed
 pull secret on its next retry: no need to delete it.
 
-### 10. Every other deployment: Redeploy from Odoo
+### 10. Every other deployment: `restore-deployments`
 
-Once odoo.ordomatics.com answers, press **Redeploy** on ordomatics-prod first
-(full values, its own Wave/Resend/Google keys), then on each other production
-and test deployment. `deploy-branch` recreates their registry and app Secrets
-from Odoo's records. GitLab deploy tokens survive, so the stored registry
-credentials still work.
+Once odoo.ordomatics.com answers, create a `restore-deployments` pipeline (no
+manual play). It calls Odoo's **Redeploy all** (also a button on the back
+office's Deployments list) and reports until every deployment has settled.
+Each one redeploys as soon as it is live, asleep or failed, which is where a
+restore leaves them; asleep ones redeploy asleep. `deploy-branch` recreates their
+registry and app Secrets from Odoo's records; GitLab deploy tokens survive, so
+the stored registry credentials still work.
+
+A deployment on a customer's cluster waits until its owner reconnects that
+cluster, then redeploys by itself: the job lists it and does not fail on it.
+The job fails on a deployment that failed on our cluster: open it in Odoo
+(**Retry Upgrade** when an old upgrade Job is in the way, as ged-test's was).
+
+Needs `ODOO_RESTORE_LOGIN` and `ODOO_RESTORE_API_KEY` on `ordomatics/infra`:
+an Odoo user with rights on deployments, and an API key of that user.
 
 ### 11. Verify, then clean up
 
@@ -271,8 +282,6 @@ than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 
 ## Next: fewer steps after the restore
 
-1. A `restore-deployments` mode (or an Odoo action) that redeploys every
-   deployment once ordomatics-prod is up (step 10).
-2. Back up the ArgoCD registrations of customers' clusters with the state, so
+1. Back up the ArgoCD registrations of customers' clusters with the state, so
    their owners need not paste a token again.
-3. Pin Asterisk by a node-pool label rather than a hostname and IP (step 11).
+2. Pin Asterisk by a node-pool label rather than a hostname and IP (step 11).
