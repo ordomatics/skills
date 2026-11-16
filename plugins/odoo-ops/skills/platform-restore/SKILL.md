@@ -34,8 +34,8 @@ production would come back on blank databases (same failure class as the
 **Since 2026-11 the state is backed up:** `platform/tfstate-backup` uploads every
 workspace's state hourly, age-encrypted, to the generic package registry of
 `ordomatics/infra` (package `tfstate`, version `current`). With that backup,
-step 6 is a restore, not an import. The private age key is the user's (their
-password manager): ask for it.
+the `restore-platform` pipeline restores it (steps 4–7). The age key is the
+user's (their password manager), also held by CI as `TFSTATE_AGE_KEY`.
 
 If the old control plane still answers (`kubectl -n crossplane-system get
 secrets -l tfstate=true` on the old kubeconfig: LKE kept answering for ~2 days
@@ -49,10 +49,10 @@ imports by applying them as-is. Read-only on the old account.
 | NeonProject | neon-project-tf | `np-<claim>` | yes: `neon_project` + `neon_database.default` |
 | Database | database-neon-tf | `db-<claim>` | yes: `neon_database.db` |
 | Database | database-neon-ref-tf | `db-<claim>` | nothing to import (data sources only) |
-| NeonBranch | neon-branch-tf | `nb-<claim>` | yes in principle (`neon_branch`, `neon_endpoint`); not done yet |
+| NeonBranch | neon-branch-tf | `nb-<claim>` | yes: `neon_branch` + `neon_endpoint` |
 | Storage | storage-r2-tf | `st-<claim>` | bucket + CORS yes; the Cloudflare token is minted anew |
 | Storage | storage-linode-tf (no selector) | `st-<claim>` | no: belongs to the old Linode account; keep paused |
-| ClusterTunnel | cluster-tunnel-tf | `tun-<claim>` | no: tunnel secret unrecoverable; recreate and re-run the connector |
+| ClusterTunnel | cluster-tunnel-tf | `tun-<claim>` | in the backup; without it, no: the tunnel secret is unrecoverable, recreate it and re-run the connector |
 | ClientCluster | client-cluster-lke-tf | `cc-<claim>` | must NOT be adopted: the new account needs a new cluster |
 
 ## Procedure
@@ -82,6 +82,7 @@ Read each variable's `masked`/`protected` first and keep them.
 | `CF_TUNNELS_TOKEN`, `CF_ZONE_ID` | same, for `cloudflare-tunnel-creds` |
 | `STOREFRONT_RESEND_API_KEY`, `STOREFRONT_GOOGLE_CLIENT_ID`, `STOREFRONT_GOOGLE_CLIENT_SECRET` | `storefront-email` was once made by hand; without these the storefront server stays in CreateContainerConfigError |
 | `TFSTATE_BACKUP_USER`, `TFSTATE_BACKUP_TOKEN` | deploy token on `ordomatics/infra` with `write_package_registry`; without them `tfstate-backup` has no Secret and nothing is backed up |
+| `TFSTATE_AGE_KEY` | File variable, protected, masked and hidden: only the `AGE-SECRET-KEY-…` line (a multi-line value cannot be masked). `restore:key-check` proves on every push that it matches the backup's recipient |
 
 Compare what `ci/scripts/bootstrap-argocd.sh` reads with what GitLab has:
 `grep -oE '\$\{?[A-Z][A-Z0-9_]+' ci/scripts/bootstrap-argocd.sh | sort -u`
@@ -94,59 +95,36 @@ against the variables list. Ignore script-internal names.
 - `platform-cluster/variables.tf`: `node_type = "g6-standard-4"` (8 GB; 4 GB
   stalled Backstage rollouts).
 
-### 4. Pause every Terraform-backed claim (platform repo)
+### 4–7. Pause, provision, restore, unpause: the `restore-platform` pipeline
 
-```bash
-cd ~/projects/ordomatics/platform
-python3 <skill>/references/pause-claims.py pause    # adds crossplane.io/paused: "true"
-git commit -am "Pause Terraform-backed claims until their state is rebuilt" && git push
-```
+One pipeline does what used to be four manual steps (infra, since 2026-11-16):
 
-The ClientCluster claim stays unpaused. Crossplane 1.17 honours the annotation
-on claims: no composite, no Workspace.
-
-### 5. Provision the platform cluster
-
-Create the pipeline, then play its manual job **(user)**:
+| Job | Does |
+|---|---|
+| `restore:pause` | pauses every Terraform-backed claim in the platform repo (`platform/scripts/pause-claims.py`) and pushes: nothing can create on empty state |
+| `provision:platform-cluster` | **the one manual play (user)** |
+| `bootstrap:platform` | follows automatically |
+| `restore:state` | decrypts the hourly backup with `TFSTATE_AGE_KEY` and applies it; leaves out `tfstate-cc-*` unless the input `restore_same_account` is `yes` |
+| `restore:unpause` | unpauses `neon-projects/ordomatics.yaml`, waits for `np-ordomatics` Ready, **fails if Neon's project ids changed**; then unpauses every claim whose state was restored |
 
 ```bash
 glab api -X POST projects/ordomatics%2Finfra/pipeline -H 'Content-Type: application/json' \
-  --input - <<<'{"ref":"linode","inputs":{"pipeline_mode":"provision-platform"}}'
+  --input - <<<'{"ref":"linode","inputs":{"pipeline_mode":"restore-platform"}}'
 glab api projects/ordomatics%2Finfra/pipelines/<id>/jobs      # provision:platform-cluster is manual
 glab api -X POST projects/ordomatics%2Finfra/jobs/<job>/play   # (user)
 ```
 
-`bootstrap:platform` follows automatically. (`-f 'inputs[pipeline_mode]=...'`
-does not work with glab: pass JSON via `--input`.)
+`TFSTATE_AGE_KEY` is a protected, masked and hidden **File** variable on
+`ordomatics/infra` holding the age identity. Plain `provision-platform` now
+refuses (`restore:guard`) to build a missing platform cluster under unpaused
+claims, which is the case that recreates empty databases.
 
-Kubeconfigs come straight from the cloud API, no Terraform needed:
+**`restore:unpause` fails, listing claims, when some have no state in the
+backup** (created in the hour before the loss). They stay paused; adopt each,
+then unpause it (`python3 scripts/pause-claims.py unpause <file>` in the
+platform repo, push).
 
-```bash
-ID=$(curl -s -H "Authorization: Bearer $L" https://api.linode.com/v4/lke/clusters \
-  | jq -r '.data[] | select(.label=="ordomatics-platform") | .id')
-curl -s -H "Authorization: Bearer $L" https://api.linode.com/v4/lke/clusters/$ID/kubeconfig \
-  | jq -r .kubeconfig | base64 -d > ~/.kube/ordomatics-platform-new.yaml   # umask 077
-```
-
-**Verify the pause held** before anything else:
-`kubectl get workspaces.tf.upbound.io` must list only `cc-<clients cluster>`;
-every claim shows `SYNCED False`.
-
-### 6. Put the Terraform state back
-
-**6a. From the backup (normal case).** With the user's age key file:
-
-```bash
-bash <skill>/references/restore-state.sh <age-key-file> ~/.kube/ordomatics-platform-new.yaml
-```
-
-It leaves out `tfstate-cc-*` unless given `--same-account`. On a new account the
-clients cluster must be created anew, and its old state names the old cluster.
-Then go to step 7: the first unpaused claim's Workspace must reconcile with
-nothing to change. Claims created after the last backup (at most an hour old)
-are missing from it; adopt those with 6b.
-
-**6b. By import (no backup, or claims newer than it).**
+**By import: claims with no state in the backup.**
 
 ```bash
 cd ~/projects/ordomatics/platform
@@ -176,19 +154,20 @@ Upload them under their workspace names:
 The Secrets carry the same labels Terraform gives them in-cluster.
 Afterwards delete `$WORK`: it holds credential files and states with passwords.
 
-### 7. Unpause, one first
+Keep paused whatever is not adoptable (table above), and any claim whose
+resource no longer exists: remove it from git instead.
 
-Unpause one NeonProject (`pause-claims.py unpause neon-projects/ordomatics.yaml`),
-push, hard-refresh `crossplane-neon-projects`, wait for `np-ordomatics`
-Ready/Synced, then **count Neon projects through the API: the count and ids
-must be unchanged.** Then unpause the rest:
+If the old control plane still answers, its states can be applied as they are
+instead of the backup (see "What survives" above), before the unpause job.
+
+Kubeconfigs come straight from the cloud API, no Terraform needed:
 
 ```bash
-python3 <skill>/references/pause-claims.py unpause --all --keep storage/<linode bucket>.yaml ...
+ID=$(curl -s -H "Authorization: Bearer $L" https://api.linode.com/v4/lke/clusters \
+  | jq -r '.data[] | select(.label=="ordomatics-platform") | .id')
+curl -s -H "Authorization: Bearer $L" https://api.linode.com/v4/lke/clusters/$ID/kubeconfig \
+  | jq -r .kubeconfig | base64 -d > ~/.kube/ordomatics-platform-new.yaml   # umask 077
 ```
-
-Keep paused whatever is not adoptable (table above), and any claim whose
-resource no longer exists (e.g. `envlab-staging`).
 
 ### 8. Backstage, then the clients cluster
 
@@ -290,12 +269,10 @@ than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 - **Untracked work in `/tmp`:** credential files written for the imports must
   be mode 600 and deleted afterwards.
 
-## Next: make it two buttons
+## Next: fewer steps after the restore
 
-What should become pipeline modes in `infra`, so this is "press provision,
-press restore" (done since: no job downloads from GitHub, and
-`bootstrap-platform` checks its variables and token scopes first):
-1. `restore-state`: run steps 4 and 6–7 in CI. Pause, generate,
-   plan-gate on "0 to destroy", apply, push, unpause.
-2. A `restore-deployments` mode that triggers Odoo's Redeploy for every
-   deployment once ordomatics-prod is up.
+1. A `restore-deployments` mode (or an Odoo action) that redeploys every
+   deployment once ordomatics-prod is up (step 10).
+2. Back up the ArgoCD registrations of customers' clusters with the state, so
+   their owners need not paste a token again.
+3. Pin Asterisk by a node-pool label rather than a hostname and IP (step 11).
