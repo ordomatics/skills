@@ -17,6 +17,7 @@ Credentials come from env files and are written mode 600 into each directory:
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 
 import yaml
@@ -114,6 +115,29 @@ for c in claims('databases'):
           dict(defaults, project_id=s['neonProjectId'], branch_id=s['neonBranchId'], db_name=name,
                db_host=s.get('neonHost', ''), db_host_direct=s.get('neonHostDirect', '')),
           [('neon_database.db', f"{s['neonProjectId']}/{s['neonBranchId']}/{name}")],
+          neon_files)
+
+# Branches: found by name in their project, with the endpoint on them.
+module, defaults = composition('neon-branch-tf')
+for c in claims('neon-branches'):
+    if selector(c) != 'neon-tf':
+        continue
+    s = c['spec']
+    try:
+        branch = next((b for b in neon(f"/projects/{s['projectId']}/branches")['branches']
+                       if b['name'] == s['name']), None)
+    except urllib.error.HTTPError:
+        branch = None
+    if not branch:
+        print('SKIP nb-%s: no branch %s in %s' % (c['metadata']['name'], s['name'], s['projectId']))
+        continue
+    endpoint = next(e for e in neon(f"/projects/{s['projectId']}/endpoints")['endpoints']
+                    if e['branch_id'] == branch['id'])
+    write('nb-' + c['metadata']['name'], prov, module,
+          dict(defaults, project_id=s['projectId'], parent_branch_id=s.get('parentBranchId', ''),
+               branch_name=s['name'], role_name=s.get('roleName', 'odoo')),
+          [('neon_branch.this', f"{s['projectId']}/{branch['id']}"),
+           ('neon_endpoint.this', f"{s['projectId']}/{endpoint['id']}")],
           neon_files)
 
 # R2: bucket and CORS are imported; the per-bucket Cloudflare token cannot be

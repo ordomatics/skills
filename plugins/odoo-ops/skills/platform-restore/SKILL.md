@@ -150,7 +150,7 @@ are missing from it; adopt those with 6b.
 
 ```bash
 cd ~/projects/ordomatics/platform
-python3 <skill>/references/adopt-state.py $WORK     # one dir per np-/db-/st- workspace
+python3 <skill>/references/adopt-state.py $WORK     # one dir per np-/db-/nb-/st- workspace
 for d in $WORK/*/; do (cd $d && terraform init -input=false >/dev/null && terraform plan -no-color | grep -E '^Plan:'); done
 ```
 
@@ -158,6 +158,8 @@ Expected plans:
 - `np-*`: `2 to import, 0 to add, 0 to change, 0 to destroy`. The project's
   password comes back from Neon on import.
 - `db-*`: `1 to import, 0 to add, 0 to change, 0 to destroy`
+- `nb-*`: `2 to import, 0 to add, 0 to change, 0 to destroy` (the branch and its
+  endpoint). A branch whose project is gone is skipped: remove its claim instead.
 - `st-*`: `1 (or 2 with CORS) to import, 1 to add, 1 to change`. The add is the
   bucket's new Cloudflare token; the change is only `force_destroy`, which is
   Terraform-side.
@@ -166,7 +168,7 @@ Expected plans:
 Then apply them **(user)**: imports only for Neon, plus new tokens for R2:
 
 ```bash
-cd $WORK && for d in np-* db-* st-*; do (cd $d && printf '%s: ' $d && terraform apply -auto-approve -input=false -no-color | grep -E '^Apply complete|^Error'; chmod 600 terraform.tfstate); done
+cd $WORK && for d in np-* db-* nb-* st-*; do (cd $d && printf '%s: ' $d && terraform apply -auto-approve -input=false -no-color | grep -E '^Apply complete|^Error'; chmod 600 terraform.tfstate); done
 ```
 
 Upload them under their workspace names:
