@@ -7,7 +7,7 @@
 set -euo pipefail
 W="$1" KC="$2"
 cd "$W"
-for ws in $(ls -d np-* db-* st-* 2>/dev/null); do
+for ws in $(ls -d np-* db-* nb-* st-* 2>/dev/null); do
   [ -f "$ws/terraform.tfstate" ] || { echo "$ws: no local state, skipped"; continue; }
   P="$W/push/$ws"; rm -rf "$P"; mkdir -p "$P"
   cat > "$P/main.tf" <<EOF
