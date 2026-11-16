@@ -247,10 +247,10 @@ an Odoo user with rights on deployments, and an API key of that user.
 - Each production namespace: pods Running, upgrade Jobs Complete, site 200.
 - Neon project count unchanged; `kubectl get workspaces.tf.upbound.io` all True.
 - n8n comes back with `bootstrap-ordomatics`; storefront with the variables above.
-- **Asterisk is pinned to one node** (`hostNetwork`): its `nodeSelector` hostname
-  and `rtp.externalAddress` in `platform/clusters/<cluster>/cluster-asterisk.yaml`
-  name a node of the OLD cluster. Repoint both to a new node and its public IP
-  (`kubectl get nodes -o wide`). A plain GET on `https://asterisk.<zone>/ws`
+- **Asterisk** (`hostNetwork`) reads its node's public IP at start
+  (`rtp.externalAddressFromNode`, since 2026-11-16), so it comes back on any
+  node of the new cluster with nothing to edit. Its log says "Discovered
+  external RTP address from node". A plain GET on `https://asterisk.<zone>/ws`
   answering 426 means its WebSocket is up.
 - `cross-cluster` Secrets: `kubectl get objects.kubernetes.crossplane.io` on the
   platform; any not Synced names the missing source Secret.
@@ -283,6 +283,8 @@ than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 - **Untracked work in `/tmp`:** credential files written for the imports must
   be mode 600 and deleted afterwards.
 
-## Next: fewer steps after the restore
+## Next
 
-1. Pin Asterisk by a node-pool label rather than a hostname and IP (step 11).
+Nothing on the list. A restore is: credentials and a new state name (steps
+1–3), the `restore-platform` pipeline (one play), `create-cluster` for the
+clients cluster, `bootstrap-ordomatics`, then `restore-deployments`.
