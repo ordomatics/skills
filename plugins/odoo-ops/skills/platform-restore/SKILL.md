@@ -273,8 +273,63 @@ It restores the latest backup with `restore-state.sh`, then lists Secrets only
 live, only restored, or with different data. Anything there should be younger
 than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 
+## A planned move: remove the old account first
+
+Done 2026-11-17 (Linode to another Linode account), in this order. Nothing is
+lost that the backup does not hold, so do it in steps and stop at each gate.
+
+1. **Prepare while everything runs.** Run `tfstate-backup` once
+   (`kubectl -n crossplane-system create job --from=cronjob/tfstate-backup <name>`),
+   and copy the state Secrets out, **encrypted as they are written** (no
+   plaintext on disk): `kubectl ... get secrets -o json | age -r <AGE_RECIPIENT> -o <file>.age`.
+   Record a before-picture (Linode clusters, NodeBalancers, volumes, instances;
+   Neon projects; DNS counts; tunnels; ArgoCD apps; workspaces) to compare after.
+2. **Pause every Terraform-backed claim** (`scripts/pause-claims.py pause`, push) so a
+   stray delete cannot reach Neon or R2. The claim is paused, not the Workspace.
+3. **Remove the clients cluster declaratively:** delete `clusters/<name>/` in the
+   platform repo. ArgoCD prunes the addon apps (the ingress Service goes first, which
+   deletes its NodeBalancer), Crossplane destroys the LKE cluster. Odoo refuses this in its
+   UI for the shared cluster. The sites are down from here.
+4. **Destroy the platform cluster:** `platform-cluster/main.tf` has
+   `lifecycle.prevent_destroy = true`, so `destroy-platform` fails its plan until it is set
+   to `false` **in its own commit** (its comment says so). Create the pipeline with
+   `{"ref":"linode","inputs":{"pipeline_mode":"destroy-platform","destroy_confirm":"DESTROY"}}`
+   and play `destroy:platform-cluster` (user). It also deletes the argocd and backstage A
+   records. Linode then deletes the CCM-created NodeBalancer and volume by itself within
+   minutes: check the account against the before-picture before deleting anything by hand.
+5. **Only then switch accounts:** the new `LINODE_API_TOKEN` in `infra/.env` **and** the CI
+   variable (compare them by hash, never print), a **new `TF_STATE_NAME`** in the three
+   platform jobs, `prevent_destroy = true` back, and revert the clients-cluster removal.
+   Push, run `terraform:plan-platform-cluster` (it shows `1 to add`), then continue at step 4
+   above with `restore-platform`.
+6. After provisioning: replace the dead kubeconfigs (`ci/scripts/linode-kubeconfig.sh <label> <out>`),
+   restart Backstage, `create-cluster` for the clients cluster, `bootstrap-ordomatics`,
+   `restore-deployments`.
+
 ## Common pitfalls
 
+- **`restore-deployments` needs Odoo at `odoo.ordomatics.com`.** The bootstrap deploys
+  `ordomatics-prod` with a wildcard host, so ExternalDNS creates only `*.ordomatics.com`.
+  A wildcard never answers for a name that has children: stale
+  `_acme-challenge.<x>.odoo.ordomatics.com` TXT records made `odoo` resolve to nothing.
+  Delete such leftovers. `saas.ordomatics.com` is the **storefront**, not Odoo: do not use it
+  as `ODOO_URL` (its `/jsonrpc` answers 405). The project forbids user-set pipeline
+  variables, so an override must be an ordinary CI variable, removed afterwards.
+- **A pipeline always contains `restore:odoo-check`;** if it fails, `restore:deployments`
+  is skipped. The sign-in needs the restore user to have an **email address**: `Redeploy all`
+  posts a note, and Odoo refuses ("Unable to send message, please configure the sender's
+  email address") for a user without one.
+- **A `pending` deployment never redeployed** (its pods cannot pull: the registry Secret is
+  one only a redeploy recreates; Backstage reports `servers: null`). Fixed in `saas`
+  `3149162` (a requested redeploy fires from a `pending` deployment whose last operation
+  finished over 15 minutes ago). On an older image, set it to `failed` by hand.
+- **GitLab answers 429** to the template archive fetch when several redeploys run at once;
+  the one that failed is retried alone (`action_redeploy`) when the others have settled.
+- **The backup carries what existed:** a registration made by mistake comes back too
+  (`argocd` cluster Secrets and `<name>-cluster-kubeconfig`). List `argocd` cluster Secrets after
+  a restore and delete any that no app uses.
+- **`restore:unpause` passing is the proof** that Neon's project list did not change; still
+  compare Neon's names and ids with the before-picture, and the 19 workspaces `True/True`.
 - **Local DNS:** after ExternalDNS replaces a record, a home router can cache
   an empty answer (NOERROR, no A) for up to the zone's 30-minute SOA minimum.
   Compare `dig @1.1.1.1` with `dig @192.168.1.1` before suspecting the cluster.
@@ -285,6 +340,9 @@ than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 
 ## Next
 
-Nothing on the list. A restore is: credentials and a new state name (steps
-1–3), the `restore-platform` pipeline (one play), `create-cluster` for the
-clients cluster, `bootstrap-ordomatics`, then `restore-deployments`.
+A `restore-all` pipeline mode: `restore-platform`, then wait for the clients cluster,
+restart Backstage, register it (`create-cluster`), `bootstrap:ordomatics`, wait for Odoo,
+`restore-deployments`, with one manual play (provision). Today they were six triggers.
+A restore is: credentials and a new state name (steps 1–3), the `restore-platform`
+pipeline (one play), `create-cluster` for the clients cluster, `bootstrap-ordomatics`, then
+`restore-deployments`.
