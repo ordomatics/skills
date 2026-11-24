@@ -106,6 +106,7 @@ One pipeline does what used to be four manual steps (infra, since 2026-11-16):
 | `bootstrap:platform` | follows automatically |
 | `restore:state` | decrypts the hourly backup with `TFSTATE_AGE_KEY` and applies **every** state, clusters included: a cluster that still exists matches its state, one that is gone is dropped on refresh and made anew |
 | `restore:unpause` | unpauses `neon-projects/ordomatics.yaml`, waits for `np-ordomatics` Ready, **fails if Neon's project ids changed**; then unpauses every claim whose state was restored, and **fails if a cluster in an account of its own was created or removed** (`linode-creds-<name>` marks one) |
+| `bootstrap:ordomatics`, `bootstrap:platform-apps` | the last stage of the same pipeline, each a **manual play (user)**: ordomatics-prod (step 9), then the storefront's and Asterisk's credentials (step 10) |
 
 ```bash
 glab api -X POST projects/ordomatics%2Finfra/pipeline -H 'Content-Type: application/json' \
@@ -197,8 +198,9 @@ ArgoCD apps that said "there are no clusters with this name".
 
 ### 9. ordomatics-prod: `bootstrap-ordomatics`
 
-saas runs inside ordomatics-prod, so it cannot redeploy itself while down. Run
-the `bootstrap-ordomatics` pipeline mode (play the job: **user**). Fixed on
+saas runs inside ordomatics-prod, so it cannot redeploy itself while down. Play
+the `bootstrap:ordomatics` job of the restore pipeline (**user**; also a mode of
+its own). Fixed on
 2026-11-08 (infra `b370d83`, `d5c3404`, `c1e1340`). Before running an older
 copy, check it has all three:
 - R2 bucket by default (`ordomatics-r2-filestore`, provider `r2`), with the
