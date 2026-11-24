@@ -82,7 +82,6 @@ Read each variable's `masked`/`protected` first and keep them.
 | `CF_TUNNELS_TOKEN`, `CF_ZONE_ID` | same, for `cloudflare-tunnel-creds` |
 | `STOREFRONT_RESEND_API_KEY`, `STOREFRONT_GOOGLE_CLIENT_ID`, `STOREFRONT_GOOGLE_CLIENT_SECRET` | `storefront-email` was once made by hand; without these the storefront server stays in CreateContainerConfigError |
 | `TFSTATE_BACKUP_USER`, `TFSTATE_BACKUP_TOKEN` | deploy token on `ordomatics/infra` with `write_package_registry`; without them `tfstate-backup` has no Secret and nothing is backed up |
-| `ODOO_RESTORE_LOGIN`, `ODOO_RESTORE_API_KEY` | an Odoo user with rights on deployments and its API key, for `restore-deployments` |
 | `TFSTATE_AGE_KEY` | File variable, protected, masked and hidden: only the `AGE-SECRET-KEY-…` line (a multi-line value cannot be masked). `restore:key-check` proves on every push that it matches the backup's recipient |
 
 Compare what `ci/scripts/bootstrap-argocd.sh` reads with what GitLab has:
@@ -227,28 +226,26 @@ does not know about individual clusters or apps any more.
   nothing is minted while a copy exists.
 - **Storefront and Asterisk credentials:** the `bootstrap-platform-apps` pipeline
   mode, from the CI variables (it needs none of this to get Odoo live).
-- **Every deployment:** the `restore-deployments` job below.
+- **Every deployment:** Odoo itself, below.
 
-#### `restore-deployments`
+#### Every deployment: automatic
 
-Once odoo.ordomatics.com answers, create a `restore-deployments` pipeline (no
-manual play). It calls Odoo's **Redeploy all** (also a button on the back
-office's Deployments list) and reports until every deployment has settled.
-Each one redeploys as soon as it is live, asleep or failed, which is where a
-restore leaves them; asleep ones redeploy asleep. `deploy-branch` recreates their
-registry and app Secrets from Odoo's records; GitLab deploy tokens survive, so
-the stored registry credentials still work.
+Odoo notices the rebuild itself. Its reconcile asks Backstage which cluster the
+platform runs on (the UID of `kube-system`); the first sight of a different one
+flags every deployment (but ordomatics-prod's own) to redeploy, and each goes
+as soon as it is live, asleep or failed, **three at a time** (GitLab refuses
+more archive fetches at once). Asleep ones redeploy asleep. `deploy-branch`
+recreates their registry and app Secrets from Odoo's records; GitLab deploy
+tokens survive, so the stored registry credentials still work. Watch the
+Deployments list: each shows the note "The platform was rebuilt: redeploying."
+The **Redeploy all** button does the same on demand.
 
 Customers' clusters come back connected: the backup holds each one's
 connection (`<name>-cluster-kubeconfig`) and ArgoCD registration, and its
 tunnel comes back from state. Only a cluster connected after the last backup
-needs its owner to paste a token again; until then its deployments wait, and
-the job lists them without failing on them.
-The job fails on a deployment that failed on our cluster: open it in Odoo
-(**Retry Upgrade** when an old upgrade Job is in the way, as ged-test's was).
-
-Needs `ODOO_RESTORE_LOGIN` and `ODOO_RESTORE_API_KEY` on `ordomatics/infra`:
-an Odoo user with rights on deployments, and an API key of that user.
+needs its owner to paste a token again; until then its deployments wait.
+A deployment that failed on our cluster: open it in Odoo (**Retry Upgrade**
+when an old upgrade Job is in the way, as ged-test's was).
 
 ### 11. Verify, then clean up
 
@@ -324,22 +321,15 @@ lost that the backup does not hold, so do it in steps and stop at each gate.
    Push, run `terraform:plan-platform-cluster` (it shows `1 to add`), then continue at step 4
    above with `restore-platform`.
 6. After provisioning: replace the dead kubeconfigs (`ci/scripts/linode-kubeconfig.sh <label> <out>`),
-   restart Backstage, `create-cluster` for the clients cluster, `bootstrap-ordomatics`,
-   `restore-deployments`.
+   restart Backstage, `bootstrap-ordomatics`; Odoo redeploys the rest by itself.
 
 ## Common pitfalls
 
-- **`restore-deployments` needs Odoo at `odoo.ordomatics.com`.** The bootstrap deploys
+- **Odoo has to answer at `odoo.ordomatics.com`.** The bootstrap deploys
   `ordomatics-prod` with a wildcard host, so ExternalDNS creates only `*.ordomatics.com`.
   A wildcard never answers for a name that has children: stale
   `_acme-challenge.<x>.odoo.ordomatics.com` TXT records made `odoo` resolve to nothing.
-  Delete such leftovers. `saas.ordomatics.com` is the **storefront**, not Odoo: do not use it
-  as `ODOO_URL` (its `/jsonrpc` answers 405). The project forbids user-set pipeline
-  variables, so an override must be an ordinary CI variable, removed afterwards.
-- **A pipeline always contains `restore:odoo-check`;** if it fails, `restore:deployments`
-  is skipped. The sign-in needs the restore user to have an **email address**: `Redeploy all`
-  posts a note, and Odoo refuses ("Unable to send message, please configure the sender's
-  email address") for a user without one.
+  Delete such leftovers. `saas.ordomatics.com` is the **storefront**, not Odoo.
 - **A `pending` deployment never redeployed** (its pods cannot pull: the registry Secret is
   one only a redeploy recreates; Backstage reports `servers: null`). Fixed in `saas`
   `3149162` (a requested redeploy fires from a `pending` deployment whose last operation
@@ -361,9 +351,6 @@ lost that the backup does not hold, so do it in steps and stop at each gate.
 
 ## Next
 
-A `restore-all` pipeline mode: `restore-platform`, then wait for the clients cluster,
-restart Backstage, register it (`create-cluster`), `bootstrap:ordomatics`, wait for Odoo,
-`restore-deployments`, with one manual play (provision). Today they were six triggers.
 A restore is: credentials and a new state name (steps 1–3), the `restore-platform`
-pipeline (one play), `create-cluster` for the clients cluster, `bootstrap-ordomatics`, then
-`restore-deployments`.
+pipeline (one play), `bootstrap-ordomatics`; Odoo redeploys everything else by itself.
+A `restore-all` mode that chains the first two would turn today's separate triggers into one play.
