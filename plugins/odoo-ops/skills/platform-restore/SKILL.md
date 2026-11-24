@@ -185,7 +185,7 @@ calls, and a first call with only `name` skipped every step behind `addons`
 and `register`.
 
 ```json
-{"templateRef":"template:default/create-cluster","values":{"name":"ordomatics-clients",
+{"templateRef":"template:default/create-cluster","values":{"name":"clients",
  "provider":"lke","region":"eu-central","nodeSize":"g6-standard-4","nodeCount":2,
  "kubernetesVersion":"1.35","dnsZone":"ordomatics.com","acmeEmail":"admin@ordomatics.com",
  "addons":true,"register":true,"timeoutSeconds":1800}}
