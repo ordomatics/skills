@@ -273,6 +273,38 @@ when an old upgrade Job is in the way, as ged-test's was).
   each repo's pair kept in `<group>-<repo>-repo-creds`, which the backup holds.
 - Restore anything temporarily rerouted during the outage.
 
+## The full destroy-and-rebuild drill (2026-11-24, same account)
+
+`destroy-platform`, then `restore-platform`, on a live platform whose apps ran on
+another cluster (`diansire`, another account). Platform services were down from
+about 21:00 to 22:02; the apps on `diansire` never stopped. Provisioning took 2
+minutes, the platform bootstrap 4, the state restore and unpause 2. Everything
+after that was fixes: an uninterrupted run is about 15 minutes after the play.
+
+What it checked and found (all fixed unless noted):
+- **All 17 states restored, every claim released, Neon unchanged (3 projects),
+  `diansire` registered again from the backup**, and its cluster count unchanged.
+- **n8n came back with the same login and encryption key** (hashes equal before
+  and after): both live as copies in `ordomatics-platform` and travel in the backup.
+- **The pause skipped cluster claims**, so `diansire`'s would have synced before
+  its state came back and created a second cluster. `pause-claims.py` covers them.
+- **`bootstrap:ordomatics` raced Backstage's DNS and certificate** (ran 4 seconds
+  after the unpause). It now waits up to 15 minutes.
+- **`deploy-branch` could not build ordomatics-prod on a fresh platform:** the
+  default Kubernetes client was the legacy shared clients cluster, a placeholder
+  host in capitals. It now means the platform's own cluster.
+- **Odoo noticed the rebuild but missed n8n and its own deployment**, and three
+  redeploys at once got a GitLab 429. It now flags both, runs one redeploy at a
+  time and retries a throttled one.
+- **The ordomatics AppProject came out with empty destinations** (the bootstrap
+  passed the wrong parameter and the skeleton did not know the platform cluster).
+- **`destroy-platform` leaves orphans:** the old NodeBalancer and a PVC volume
+  stay in the account (the load balancer and Backstage's database volume). Delete
+  them by hand after checking they are detached. Not yet automated.
+- **Not done:** `ADMIN_PASSWD` regenerates for every app that is redeployed from
+  scratch; an apps cluster rebuilt in a surviving platform is not detected (only
+  the platform's identity is).
+
 ## Drill: prove the backup restores
 
 Without touching the live platform, on a throwaway one-node cluster that is
