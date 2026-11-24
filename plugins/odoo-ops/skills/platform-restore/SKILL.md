@@ -1,6 +1,6 @@
 ---
 name: platform-restore
-description: "Restore the whole Ordomatics platform (platform cluster, clients cluster, every production deployment) onto a new or emptied cloud account, without duplicating Neon projects or R2 buckets. Use when the Linode account is suspended or replaced, when both clusters are gone, when a fresh platform cluster must take over the existing Neon/R2 data, or when asked to 'redeploy the stack on the new account', 'rebuild the platform', 'restore after the outage', 'move to another Linode account', 'disaster recovery'. Also use before ANY provision-platform run on an empty account: running it naively recreates empty databases."
+description: "Restore the Ordomatics platform (the platform cluster and ordomatics-prod; Odoo then brings back the clusters and every deployment) onto a new or emptied cloud account, without duplicating Neon projects or R2 buckets. Use when the Linode account is suspended or replaced, when both clusters are gone, when a fresh platform cluster must take over the existing Neon/R2 data, or when asked to 'redeploy the stack on the new account', 'rebuild the platform', 'restore after the outage', 'move to another Linode account', 'disaster recovery'. Also use before ANY provision-platform run on an empty account: running it naively recreates empty databases."
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -18,13 +18,13 @@ every pitfall below was hit then.
 | Survives (outside the clusters) | Lost with the clusters |
 |---|---|
 | git: platform, infra, client repos, values files | Terraform state of every Crossplane workspace (Secrets in `crossplane-system`) |
-| Neon projects and databases (the data) | per-deployment Secrets on the clients cluster: registry pull secret, app secret, storage keys |
+| Neon projects and databases (the data) | per-deployment Secrets on every apps cluster: registry pull secret, app secret, storage keys (Odoo's Redeploy recreates them) |
 | R2 buckets (the filestores) | Backstage's Postgres (task history; acceptable) |
 | GitLab registries, deploy tokens, CI variables | per-bucket R2 access keys (their value is shown once) |
-| Cloudflare zone, tunnels | ArgoCD's registration of our clients cluster (customers' clusters are in the backup) |
+| Cloudflare zone, tunnels | ArgoCD's registration of a cluster in the platform's account (clusters in an account of their own and customers' are in the backup) |
 
 **The one dangerous loss is the Terraform state.** Neon projects, branches,
-databases, R2 buckets, tunnels and the clients cluster are all created by
+databases, R2 buckets, tunnels and the clusters are all created by
 provider-terraform Workspaces, whose state is a Secret named
 `tfstate-<workspace>-state` on the platform cluster. On a fresh platform every
 Workspace starts with empty state and **creates new, empty resources**:
@@ -105,8 +105,8 @@ One pipeline does what used to be four manual steps (infra, since 2026-11-16):
 | `restore:pause` | pauses every Terraform-backed claim in the platform repo (`platform/scripts/pause-claims.py`) and pushes: nothing can create on empty state |
 | `provision:platform-cluster` | **the one manual play (user)** |
 | `bootstrap:platform` | follows automatically |
-| `restore:state` | decrypts the hourly backup with `TFSTATE_AGE_KEY` and applies it; leaves out `tfstate-cc-*` unless the input `restore_same_account` is `yes` |
-| `restore:unpause` | unpauses `neon-projects/ordomatics.yaml`, waits for `np-ordomatics` Ready, **fails if Neon's project ids changed**; then unpauses every claim whose state was restored |
+| `restore:state` | decrypts the hourly backup with `TFSTATE_AGE_KEY` and applies **every** state, clusters included: a cluster that still exists matches its state, one that is gone is dropped on refresh and made anew |
+| `restore:unpause` | unpauses `neon-projects/ordomatics.yaml`, waits for `np-ordomatics` Ready, **fails if Neon's project ids changed**; then unpauses every claim whose state was restored, and **fails if a cluster in an account of its own was created or removed** (`linode-creds-<name>` marks one) |
 
 ```bash
 glab api -X POST projects/ordomatics%2Finfra/pipeline -H 'Content-Type: application/json' \
@@ -170,23 +170,24 @@ curl -s -H "Authorization: Bearer $L" https://api.linode.com/v4/lke/clusters/$ID
   | jq -r .kubeconfig | base64 -d > ~/.kube/ordomatics-platform-new.yaml   # umask 077
 ```
 
-### 8. Backstage, then the clients cluster
+### 8. Backstage, then the clusters
 
 After `bootstrap:platform` has written the right `GITLAB_TOKEN`, restart
 Backstage (`kubectl -n backstage rollout restart deploy/backstage`): Secrets do
 not reach running pods.
 
-Register the clients cluster through `create-cluster`. Its claim already
-exists in git and the Workspace has already built the cluster. The template
-re-renders identical files, then registers it with ArgoCD, gives Backstage
-credentials there, and seeds the Cloudflare tokens. **Call it through the API
-with every value explicit:** the form's defaults are not applied to API
-calls, and a first call with only `name` skipped every step behind `addons`
-and `register`.
+The clusters need nothing from you:
+- **Customers' clusters and clusters in an account of their own** (e.g.
+  `diansire`) come back registered with ArgoCD: the hourly backup holds their
+  registration Secrets, and `restore:unpause` checks none was duplicated.
+- **A cluster in the platform's account** that is gone is built again by its
+  claim, since its state is dropped on refresh. Register it by re-running
+  `create-cluster` through the API with every value explicit (the form's
+  defaults are not applied to API calls):
 
 ```json
-{"templateRef":"template:default/create-cluster","values":{"name":"clients",
- "provider":"lke","region":"eu-central","nodeSize":"g6-standard-4","nodeCount":2,
+{"templateRef":"template:default/create-cluster","values":{"name":"<cluster>",
+ "provider":"lke","region":"eu-central","nodeSize":"g6-standard-2","nodeCount":2,
  "kubernetesVersion":"1.35","dnsZone":"ordomatics.com","acmeEmail":"admin@ordomatics.com",
  "addons":true,"register":true,"timeoutSeconds":1800}}
 ```
@@ -210,11 +211,25 @@ copy, check it has all three:
 - The kubeconfig read from the cloud API, not `terraform init`. GitHub refused
   the provider download on shared runners twice in a row.
 
-It recommits a simplified `values.prod.yaml`. That's fine for a few minutes;
-the next step restores it. A Pod stuck in ImagePullBackOff picks up a fixed
+It builds ordomatics-prod only. n8n is not part of it (set `DEPLOY_N8N=1` only on
+a brand-new platform): its database claim comes back from the platform repo and
+Odoo redeploys it. It recommits a simplified `values.prod.yaml`. That's fine for
+a few minutes; the next step restores it. A Pod stuck in ImagePullBackOff picks up a fixed
 pull secret on its next retry: no need to delete it.
 
-### 10. Every other deployment: `restore-deployments`
+### 10. Everything else: Odoo
+
+Once odoo.ordomatics.com answers, Odoo brings back the rest; the infra pipeline
+does not know about individual clusters or apps any more.
+
+- **n8n:** Odoo, n8n, **Redeploy**. Its encryption key and its editor login are
+  restored from the copies in `ordomatics-platform` (the backup holds them);
+  nothing is minted while a copy exists.
+- **Storefront and Asterisk credentials:** the `bootstrap-platform-apps` pipeline
+  mode, from the CI variables (it needs none of this to get Odoo live).
+- **Every deployment:** the `restore-deployments` job below.
+
+#### `restore-deployments`
 
 Once odoo.ordomatics.com answers, create a `restore-deployments` pipeline (no
 manual play). It calls Odoo's **Redeploy all** (also a button on the back
@@ -246,7 +261,7 @@ an Odoo user with rights on deployments, and an API key of that user.
   password again.
 - Each production namespace: pods Running, upgrade Jobs Complete, site 200.
 - Neon project count unchanged; `kubectl get workspaces.tf.upbound.io` all True.
-- n8n comes back with `bootstrap-ordomatics`; storefront with the variables above.
+- n8n comes back through Odoo (step 10); the storefront and Asterisk with `bootstrap-platform-apps`.
 - **Asterisk** (`hostNetwork`) reads its node's public IP at start
   (`rtp.externalAddressFromNode`, since 2026-11-16), so it comes back on any
   node of the new cluster with nothing to edit. Its log says "Discovered
@@ -274,6 +289,12 @@ live, only restored, or with different data. Anything there should be younger
 than an hour. First run, 2026-11-15: 21 restored, 21 live, none differing.
 
 ## A planned move: remove the old account first
+
+> Written for the 2026-11-17 move, when a shared clients cluster lived in the account
+> being replaced. Today the apps clusters are managed from Odoo: a cluster in
+> another account (`diansire`) is untouched by this procedure, and one in the
+> platform's account is rebuilt by its claim after `restore-platform`. Read
+> steps 3 and 6 below with that in mind.
 
 Done 2026-11-17 (Linode to another Linode account), in this order. Nothing is
 lost that the backup does not hold, so do it in steps and stop at each gate.
