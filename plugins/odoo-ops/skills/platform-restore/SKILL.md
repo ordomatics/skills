@@ -232,11 +232,14 @@ does not know about individual clusters or apps any more.
 
 #### Every deployment: automatic
 
-Odoo notices the rebuild itself. Its reconcile asks Backstage which cluster the
-platform runs on (the UID of `kube-system`); the first sight of a different one
-flags every deployment (but ordomatics-prod's own) to redeploy, and each goes
-as soon as it is live, asleep or failed, **three at a time** (GitLab refuses
-more archive fetches at once). Asleep ones redeploy asleep. `deploy-branch`
+Odoo notices a rebuilt cluster itself, whichever one it is. Its reconcile asks
+Backstage what each live cluster is (the UID of its `kube-system`; `in-cluster` is
+the platform) and keeps that on the cluster record. The first sight of a different
+one flags what runs on that cluster (its deployments, ordomatics-prod's included,
+and n8n) to redeploy, and each goes as soon as it is live, asleep or failed, **one
+at a time** (GitLab refuses more archive fetches at once; a throttled one is retried).
+So a platform rebuild redeploys only the platform's own apps, and an apps cluster
+made again redeploys only its apps. Asleep ones redeploy asleep. `deploy-branch`
 recreates their registry and app Secrets from Odoo's records; GitLab deploy
 tokens survive, so the stored registry credentials still work. Watch the
 Deployments list: each shows the note "The platform was rebuilt: redeploying."
@@ -305,8 +308,8 @@ What it checked and found (all fixed unless noted):
   cluster is undone by ArgoCD's self-heal). Any other detached `pvc-*` volume is
   listed as a warning, not deleted. Tested against a stubbed API on every push.
 - **Not done:** `ADMIN_PASSWD` regenerates for every app that is redeployed from
-  scratch; an apps cluster rebuilt in a surviving platform is not detected (only
-  the platform's identity is).
+  scratch. (An apps cluster made again inside a surviving platform is now detected
+  too: the identity is kept per cluster.)
 
 ## Drill: prove the backup restores
 
