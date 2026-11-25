@@ -298,9 +298,12 @@ What it checked and found (all fixed unless noted):
   time and retries a throttled one.
 - **The ordomatics AppProject came out with empty destinations** (the bootstrap
   passed the wrong parameter and the skeleton did not know the platform cluster).
-- **`destroy-platform` leaves orphans:** the old NodeBalancer and a PVC volume
-  stay in the account (the load balancer and Backstage's database volume). Delete
-  them by hand after checking they are detached. Not yet automated.
+- **`destroy-platform` left orphans** (the old NodeBalancer and Backstage's PVC volume
+  stayed in the account). The job now records the cluster's id and its attached
+  volumes before the destroy and removes its NodeBalancers and those volumes after
+  it (`ci/scripts/release-platform-leftovers.sh`, Linode API only: deleting inside the
+  cluster is undone by ArgoCD's self-heal). Any other detached `pvc-*` volume is
+  listed as a warning, not deleted. Tested against a stubbed API on every push.
 - **Not done:** `ADMIN_PASSWD` regenerates for every app that is redeployed from
   scratch; an apps cluster rebuilt in a surviving platform is not detected (only
   the platform's identity is).
